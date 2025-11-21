@@ -1,13 +1,16 @@
 import argparse
 import os
+import sys
 from typing import Any, Dict
 
 from alo.agentic_loops.context_loop.agent import ContextLoopAgent
 from alo.agentic_loops.core.costs import CostTracker
 from alo.agentic_loops.core.logging_utils import TraceRecorder, init_logging
 from alo.agentic_loops.core.orchestrator import ALOOrchestrator
+from alo.agentic_loops.core.prompt_orchestrator import PromptOrchestrator
 from alo.agentic_loops.core.tools import ToolRegistry
 from alo.agentic_loops.engineering_loop.agent import EngineeringLoopAgent
+from alo.agentic_loops.prompt_loop.agent import PromptLoopAgent
 from alo.agentic_loops.repro_loop.agent import ReproLoopAgent
 from alo.agentic_loops.review_loop.agent import ReviewLoopAgent
 from alo.backend.clients.gemini_client import GeminiClient
@@ -16,7 +19,7 @@ from alo.config.loader import load_config
 
 try:
     from dotenv import load_dotenv
-except ImportError:  # pragma: no cover - optional dependency
+except ImportError:  # pragma: no cover
     load_dotenv = None
 
 
@@ -29,18 +32,7 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
     cost_tracker = CostTracker.get_instance()
 
     def _context_client():
-        ctx_conf = models["context"]
-        base_url = ctx_conf.get("base_url")
-        if base_url:
-            return OpenAICompatibleClient(
-                model=ctx_conf["id"],
-                api_key=os.getenv("OPENROUTER_API_KEY", ""),
-                base_url=base_url,
-            )
-        return GeminiClient(
-            model=ctx_conf["id"],
-            api_key=os.getenv("GEMINI_API_KEY", ""),
-        )
+        return _context_client_from_config(models["context"])
 
     context_client = _safe_client(_context_client, name="context")
     repro_client = _safe_client(
@@ -57,7 +49,7 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
     engineering_client = _safe_client(
         lambda: OpenAICompatibleClient(
             model=models["engineering"]["id"],
-            api_key=os.getenv("CEREBRAS_API_KEY", ""),
+            api_key=os.getenv("CEREBRAS_API_KEY", "") or os.getenv("OPENAI_API_KEY", ""),
             base_url=models["engineering"].get("base_url"),
             cost_tracker=cost_tracker,
             prompt_cost_per_1k=_pricing(models["engineering"])[0],
@@ -68,7 +60,7 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
     review_client = _safe_client(
         lambda: OpenAICompatibleClient(
             model=models["review"]["id"],
-            api_key=os.getenv("OPENROUTER_API_KEY", ""),
+            api_key=os.getenv("OPENROUTER_API_KEY", "") or os.getenv("OPENAI_API_KEY", ""),
             base_url=models["review"].get("base_url"),
             cost_tracker=cost_tracker,
             prompt_cost_per_1k=_pricing(models["review"])[0],
@@ -97,6 +89,56 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
     )
 
 
+def build_prompt_orchestrator(config: Dict[str, Any]) -> PromptOrchestrator:
+    models = config["models"]
+    prompts = config.get("prompts", {})
+    logger = init_logging(log_path="alo.log", level=config.get("logging", {}).get("level", "INFO"))
+    trace_recorder = TraceRecorder("trace.jsonl")
+    cost_tracker = CostTracker.get_instance()
+
+    context_client = _safe_client(
+        lambda: _context_client_from_config(models["context"]),
+        name="context",
+    )
+    review_client = _safe_client(
+        lambda: OpenAICompatibleClient(
+            model=models["review"]["id"],
+            api_key=os.getenv("OPENROUTER_API_KEY", "") or os.getenv("OPENAI_API_KEY", ""),
+            base_url=models["review"].get("base_url"),
+            cost_tracker=cost_tracker,
+            prompt_cost_per_1k=_pricing(models["review"])[0],
+            completion_cost_per_1k=_pricing(models["review"])[1],
+        ),
+        name="review",
+    )
+    prompt_client = _safe_client(
+        lambda: OpenAICompatibleClient(
+            model=models["engineering"]["id"],
+            api_key=os.getenv("OPENAI_API_KEY", ""),
+            base_url=models["engineering"].get("base_url"),
+            cost_tracker=cost_tracker,
+            prompt_cost_per_1k=_pricing(models["engineering"])[0],
+            completion_cost_per_1k=_pricing(models["engineering"])[1],
+        ),
+        name="prompt",
+    )
+
+    context_agent = ContextLoopAgent(context_client, prompt_template=prompts.get("context"))
+    review_agent = ReviewLoopAgent(review_client, prompt_template=prompts.get("review"))
+    prompt_agent = PromptLoopAgent(
+        prompt_client,
+        review_agent,
+        prompt_template=prompts.get("engineering"),
+    )
+    return PromptOrchestrator(
+        context_agent=context_agent,
+        prompt_agent=prompt_agent,
+        logger=logger,
+        trace_recorder=trace_recorder,
+        cost_tracker=cost_tracker,
+    )
+
+
 def _safe_client(factory, name: str):
     try:
         return factory()
@@ -116,13 +158,28 @@ def _pricing(model_conf: Dict[str, Any]) -> tuple[float, float]:
     return float(pricing.get("prompt", 0.0)), float(pricing.get("completion", 0.0))
 
 
+def _context_client_from_config(ctx_conf: Dict[str, Any]):
+    base_url = ctx_conf.get("base_url")
+    if base_url:
+        return OpenAICompatibleClient(
+            model=ctx_conf["id"],
+            api_key=os.getenv("OPENROUTER_API_KEY", ""),
+            base_url=base_url,
+        )
+    return GeminiClient(
+        model=ctx_conf["id"],
+        api_key=os.getenv("GEMINI_API_KEY", ""),
+    )
+
+
 def cli(args: list[str] | None = None) -> None:
     if load_dotenv is not None:
         load_dotenv()
 
     parser = argparse.ArgumentParser(description="Agentic Loops Orchestrator CLI")
-    parser.add_argument("--issue", required=True, help="Issue description to fix")
-    parser.add_argument("--repo", required=True, help="Path to target repository")
+    parser.add_argument("--issue", help="Issue description to fix (code mode)")
+    parser.add_argument("--repo", help="Path to target repository (code mode)")
+    parser.add_argument("--prompt", help="General prompt to answer (prompt mode)")
     parser.add_argument(
         "--config",
         default="config/config.yaml",
@@ -130,11 +187,29 @@ def cli(args: list[str] | None = None) -> None:
     )
 
     parsed = parser.parse_args(args)
-
     config = load_config(parsed.config)
-    orchestrator = build_orchestrator(config, repo_path=parsed.repo)
-    orchestrator.run(issue_description=parsed.issue, repo_path=parsed.repo)
+
+    if parsed.prompt:
+        prompt_orch = build_prompt_orchestrator(config)
+        cost_tracker = CostTracker.get_instance()
+        cost_tracker.reset()
+        state, elapsed, cost_summary = prompt_orch.run(parsed.prompt)
+        print(state.final_answer.strip())
+        print("\n---")
+        print(f"Elapsed: {elapsed:.2f}s | Estimated cost: ${cost_summary.get('total_cost', 0.0):.4f}")
+        if cost_summary.get("by_model"):
+            for model, stats in cost_summary["by_model"].items():
+                print(
+                    f"  {model}: prompts={stats.get('prompt_tokens',0)} "
+                    f"completions={stats.get('completion_tokens',0)} "
+                    f"cost=${stats.get('cost',0.0):.4f}"
+                )
+    else:
+        if not parsed.issue or not parsed.repo:
+            parser.error("--issue and --repo are required unless --prompt is provided")
+        orchestrator = build_orchestrator(config, repo_path=parsed.repo)
+        orchestrator.run(issue_description=parsed.issue, repo_path=parsed.repo)
 
 
 if __name__ == "__main__":
-    cli()
+    sys.exit(cli())

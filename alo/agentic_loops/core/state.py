@@ -10,6 +10,7 @@ class LoopState:
     context_summary: str = ""
     repro_script_content: str = ""
     repro_success: Optional[bool] = None
+    final_answer: str = ""
     history: List[Dict[str, Any]] = field(default_factory=list)
 
     def add_history(self, step: str, **details: Any) -> None:
