@@ -28,14 +28,25 @@ def main() -> int:
     models = config["models"]
     results = []
 
-    # Context / Gemini
+    # Context model: use OpenAI-compatible if base_url provided, else native Gemini
     try:
-        gemini_key = os.getenv("GEMINI_API_KEY", "")
-        ctx_client = GeminiClient(model=models["context"]["id"], api_key=gemini_key)
-        resp = ctx_client.generate(prompt="ping")
-        results.append(("context/gemini", True, str(resp)[:200]))
+        ctx_conf = models["context"]
+        base_url = ctx_conf.get("base_url")
+        if base_url:
+            ctx_client = OpenAICompatibleClient(
+                model=ctx_conf["id"],
+                api_key=os.getenv("OPENROUTER_API_KEY", ""),
+                base_url=base_url,
+            )
+            resp = ctx_client.chat([{"role": "user", "content": "ping"}])
+            results.append(("context/openrouter", True, str(resp["content"])[:200]))
+        else:
+            gemini_key = os.getenv("GEMINI_API_KEY", "")
+            ctx_client = GeminiClient(model=ctx_conf["id"], api_key=gemini_key)
+            resp = ctx_client.generate(prompt="ping")
+            results.append(("context/gemini", True, str(resp)[:200]))
     except Exception as exc:
-        results.append(("context/gemini", False, str(exc)))
+        results.append(("context", False, str(exc)))
 
     # Orchestrator (Anthropic)
     try:

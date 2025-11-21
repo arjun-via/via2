@@ -7,7 +7,7 @@ models:
       prompt: 0.003
       completion: 0.015
   context:
-    id: "google/gemini-2.5-flash"
+    id: "google/gemini-2.5-flash-preview-09-2025"
     base_url: "https://openrouter.ai/api/v1"
     temperature: 0
     pricing:

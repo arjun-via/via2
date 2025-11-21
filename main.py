@@ -28,14 +28,21 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
     tool_registry = ToolRegistry(workspace_root=repo_path)
     cost_tracker = CostTracker.get_instance()
 
-    context_client = _safe_client(
-        lambda: GeminiClient(
-            model=models["context"]["id"],
+    def _context_client():
+        ctx_conf = models["context"]
+        base_url = ctx_conf.get("base_url")
+        if base_url:
+            return OpenAICompatibleClient(
+                model=ctx_conf["id"],
+                api_key=os.getenv("OPENROUTER_API_KEY", ""),
+                base_url=base_url,
+            )
+        return GeminiClient(
+            model=ctx_conf["id"],
             api_key=os.getenv("GEMINI_API_KEY", ""),
-            # pricing not currently surfaced by SDK responses; tracked elsewhere if available
-        ),
-        name="context",
-    )
+        )
+
+    context_client = _safe_client(_context_client, name="context")
     repro_client = _safe_client(
         lambda: OpenAICompatibleClient(
             model=models["repro"]["id"],
