@@ -1,0 +1,33 @@
+id: "07_api_caching_strategy"
+category: "architecture"
+title: "API Caching Strategy for Stock Quotes"
+prompt: |
+  Design a caching strategy for a REST API that serves real-time stock quotes.
+
+  Context:
+  - API endpoint: GET /quote/:symbol
+  - 10,000 requests/second at peak
+  - Stock prices update every 1-5 seconds
+  - 5,000 different symbols tracked
+  - Users need reasonably fresh data (5-10 second staleness acceptable)
+  - Some symbols more popular than others (80/20 rule applies)
+
+  Provide:
+  1. Caching architecture (which layers: CDN, Redis, in-memory, etc.)
+  2. Cache invalidation strategy
+  3. TTL settings and justification
+  4. Handling of cache misses
+  5. Cost-performance trade-offs
+  6. Pseudocode or actual code for cache logic
+
+expected_artifacts:
+  - has_architecture_description: true
+  - has_invalidation_strategy: true
+  - has_code_or_pseudocode: true
+
+evaluation_focus:
+  correctness: 0.30
+  completeness: 0.30
+  code_quality: 0.15
+  security: 0.10
+  clarity: 0.15

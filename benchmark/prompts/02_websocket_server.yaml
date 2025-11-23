@@ -1,0 +1,27 @@
+id: "02_websocket_server"
+category: "code_generation"
+title: "WebSocket Market Data Server"
+prompt: |
+  Create a WebSocket server in Node.js that:
+  - Accepts client connections on port 8080
+  - Simulates broadcasting market data (ticker symbol, price, timestamp) every second
+  - Handles client disconnections gracefully
+  - Includes basic error handling
+  - Uses the 'ws' library
+
+  The market data should be in JSON format:
+  {"symbol": "AAPL", "price": 150.25, "timestamp": "2025-11-20T10:30:00Z"}
+
+  Include instructions on how to run the server.
+
+expected_artifacts:
+  - language: "javascript"
+  - framework: "nodejs"
+  - has_websocket: true
+
+evaluation_focus:
+  correctness: 0.30
+  completeness: 0.25
+  code_quality: 0.20
+  security: 0.10
+  clarity: 0.15

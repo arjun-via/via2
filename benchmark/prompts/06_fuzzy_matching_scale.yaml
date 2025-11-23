@@ -1,0 +1,70 @@
+id: "06_fuzzy_matching_scale"
+category: "algorithms"
+title: "Fuzzy String Matching at Scale"
+prompt: |
+  Build a fuzzy company name matching system that can handle:
+  - 10 million company names in database
+  - Query throughput: 1000 queries/second
+  - Sub-50ms p99 latency
+  - High accuracy despite variations
+
+  Matching challenges:
+  ```
+  Query: "International Business Machines"
+  Should match:
+  - "IBM Corporation" (abbreviation)
+  - "I.B.M. Corp" (punctuation)
+  - "Intl Business Machines" (common abbreviation)
+  - "International Busines Machines" (typo)
+
+  Query: "Morgan Stanley"
+  Should NOT match:
+  - "JPMorgan Chase" (substring)
+  - "Stanley Black & Decker"
+
+  Query: "3M Company"
+  Should match:
+  - "Minnesota Mining and Manufacturing"
+  - "3M Co."
+  NOT match:
+  - "M3 Technologies"
+  ```
+
+  Requirements:
+  - Handle typos (1-2 character edits)
+  - Recognize common abbreviations (Intl, Corp, Inc, etc.)
+  - Phonetic matching (Morgan ≈ Morgon)
+  - Reordering (Stanley Morgan ≈ Morgan Stanley)
+  - Ignore legal suffixes (LLC, Inc, Corp are interchangeable)
+  - Acronym expansion
+  - Scale to 10M records
+
+  Algorithms to combine:
+  - Levenshtein distance (but too slow naively on 10M)
+  - BK-tree or similar indexing structure
+  - Soundex/Metaphone for phonetic
+  - Token-based matching
+  - TF-IDF for rarity weighting
+
+  Provide:
+  - Complete implementation
+  - Indexing strategy for sub-linear search
+  - Benchmark on 10M synthetic dataset
+  - Precision/recall on test cases
+  - Explain why naive approaches fail at scale
+
+  This is production e-commerce/finance reconciliation complexity.
+
+expected_artifacts:
+  - has_fuzzy_matching: true
+  - has_indexing_structure: true
+  - handles_scale: true
+  - has_benchmarks: true
+  - high_accuracy: true
+
+evaluation_focus:
+  correctness: 0.35
+  completeness: 0.30
+  code_quality: 0.20
+  security: 0.05
+  clarity: 0.10

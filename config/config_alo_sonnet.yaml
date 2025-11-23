@@ -1,0 +1,56 @@
+models:
+  orchestrator:
+    id: "claude-sonnet-4-5-20250929"
+    base_url: "https://api.anthropic.com/v1"
+    temperature: 0
+    pricing:
+      prompt: 0.003
+      completion: 0.015
+  context:
+    id: "claude-sonnet-4-5-20250929"
+    base_url: "https://api.anthropic.com/v1"
+    temperature: 0
+    pricing:
+      prompt: 0.003
+      completion: 0.015
+  repro:
+    id: "claude-sonnet-4-5-20250929"
+    base_url: "https://api.anthropic.com/v1"
+    temperature: 0
+    pricing:
+      prompt: 0.003
+      completion: 0.015
+  engineering:
+    id: "claude-sonnet-4-5-20250929"
+    base_url: "https://api.anthropic.com/v1"
+    temperature: 0
+    pricing:
+      prompt: 0.003
+      completion: 0.015
+  review:
+    id: "claude-sonnet-4-5-20250929"
+    base_url: "https://api.anthropic.com/v1"
+    temperature: 0
+    pricing:
+      prompt: 0.003
+      completion: 0.015
+logging:
+  level: INFO
+prompts:
+  context: |
+    You are the context librarian. Given an issue description, propose relevant files
+    and a short context summary as JSON with keys relevant_files and summary.
+    Issue: {issue}
+  repro: |
+    Write a Python reproduction script for the issue as JSON {{"script": "..."}}.
+    Issue: {issue}
+  engineering: |
+    You are the builder. Propose a patch for the issue.
+    Issue: {issue}
+    Context: {context}
+    Relevant files: {files}
+  review: |
+    Review the following patch. Reply with PASS if acceptable, otherwise FAIL.
+    Issue: {issue}
+    Patch:
+    {patch}

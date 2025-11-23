@@ -1,0 +1,111 @@
+id: "09_refactor_monolith"
+category: "refactoring"
+title: "Refactor Monolithic Function"
+prompt: |
+  Refactor this 200-line function into clean, modular components:
+
+  ```python
+  def process_trading_day(date, trades_csv, positions_csv, market_data_csv):
+      import pandas as pd
+      import numpy as np
+      from datetime import datetime
+
+      # Load data
+      trades = pd.read_csv(trades_csv)
+      positions = pd.read_csv(positions_csv)
+      market = pd.read_csv(market_data_csv)
+
+      # Filter to date
+      trades = trades[trades['date'] == date]
+      market = market[market['date'] == date]
+
+      # Calculate P&L per trade
+      trades['pnl'] = trades.apply(lambda r:
+          (r['exit_price'] - r['entry_price']) * r['quantity']
+          if r['side'] == 'long'
+          else (r['entry_price'] - r['exit_price']) * r['quantity'],
+          axis=1
+      )
+
+      # Calculate commissions
+      trades['commission'] = trades['quantity'] * trades['price'] * 0.0005
+      trades['net_pnl'] = trades['pnl'] - trades['commission']
+
+      # Aggregate by symbol
+      symbol_pnl = trades.groupby('symbol')['net_pnl'].sum().to_dict()
+
+      # Update positions
+      for idx, trade in trades.iterrows():
+          symbol = trade['symbol']
+          qty = trade['quantity'] if trade['side'] == 'long' else -trade['quantity']
+
+          pos_idx = positions[positions['symbol'] == symbol].index
+          if len(pos_idx) > 0:
+              positions.loc[pos_idx[0], 'quantity'] += qty
+              positions.loc[pos_idx[0], 'avg_price'] = (
+                  (positions.loc[pos_idx[0], 'avg_price'] * (positions.loc[pos_idx[0], 'quantity'] - qty) +
+                   trade['price'] * qty) / positions.loc[pos_idx[0], 'quantity']
+              )
+          else:
+              positions = pd.concat([positions, pd.DataFrame([{
+                  'symbol': symbol,
+                  'quantity': qty,
+                  'avg_price': trade['price']
+              }])], ignore_index=True)
+
+      # Calculate unrealized P&L
+      for idx, pos in positions.iterrows():
+          symbol = pos['symbol']
+          current_price = market[market['symbol'] == symbol]['close'].iloc[0] if len(market[market['symbol'] == symbol]) > 0 else pos['avg_price']
+          positions.loc[idx, 'unrealized_pnl'] = (current_price - pos['avg_price']) * pos['quantity']
+
+      # Calculate metrics
+      total_realized_pnl = trades['net_pnl'].sum()
+      total_unrealized_pnl = positions['unrealized_pnl'].sum()
+      total_pnl = total_realized_pnl + total_unrealized_pnl
+
+      win_trades = trades[trades['net_pnl'] > 0]
+      lose_trades = trades[trades['net_pnl'] <= 0]
+
+      win_rate = len(win_trades) / len(trades) if len(trades) > 0 else 0
+      avg_win = win_trades['net_pnl'].mean() if len(win_trades) > 0 else 0
+      avg_loss = lose_trades['net_pnl'].mean() if len(lose_trades) > 0 else 0
+
+      profit_factor = abs(win_trades['net_pnl'].sum() / lose_trades['net_pnl'].sum()) if lose_trades['net_pnl'].sum() != 0 else float('inf')
+
+      # Generate report
+      report = {
+          'date': date,
+          'total_trades': len(trades),
+          'realized_pnl': total_realized_pnl,
+          'unrealized_pnl': total_unrealized_pnl,
+          'total_pnl': total_pnl,
+          'win_rate': win_rate,
+          'avg_win': avg_win,
+          'avg_loss': avg_loss,
+          'profit_factor': profit_factor,
+          'symbol_pnl': symbol_pnl,
+          'positions': positions.to_dict('records')
+      }
+
+      return report
+  ```
+
+  Refactor this into:
+  1. Separate, single-responsibility functions/classes
+  2. Clear separation of concerns (data loading, calculations, reporting)
+  3. Improved readability and testability
+  4. Proper error handling
+  5. Type hints where appropriate
+
+expected_artifacts:
+  - language: "python"
+  - has_multiple_functions: true
+  - has_type_hints: preferred
+
+evaluation_focus:
+  correctness: 0.25
+  completeness: 0.20
+  code_quality: 0.40
+  security: 0.05
+  clarity: 0.10

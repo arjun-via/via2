@@ -1,0 +1,40 @@
+id: "01_byzantine_consensus"
+category: "distributed_systems"
+title: "Byzantine Fault-Tolerant Consensus"
+prompt: |
+  Implement a Byzantine fault-tolerant consensus protocol (simplified Practical Byzantine Fault Tolerance) for a distributed system with N=7 nodes where up to 2 nodes can be malicious.
+
+  Requirements:
+  - Nodes must agree on a single value even if malicious nodes send conflicting messages
+  - Handle network partitions and message delays (async model)
+  - Detect and isolate Byzantine nodes sending conflicting signatures
+  - Implement three-phase commit: pre-prepare, prepare, commit
+  - Message authentication with digital signatures (you can mock the crypto)
+  - View change protocol when primary is suspected faulty
+  - Prove safety: no two honest nodes decide different values
+  - Handle these attack scenarios:
+    * Primary broadcasts different values to different replicas
+    * Malicious replica claims different values in prepare phase
+    * Byzantine node delays messages selectively
+
+  Your implementation should include:
+  - Node class with state machine
+  - Message types and validation logic
+  - Consensus protocol implementation
+  - Test scenario showing Byzantine nodes being detected
+  - Explanation of why your approach guarantees safety
+
+  Do NOT just describe the algorithm - provide actual implementation with Byzantine attack handling.
+
+expected_artifacts:
+  - language: "any"
+  - has_implementation: true
+  - handles_byzantine_faults: true
+  - has_test_scenario: true
+
+evaluation_focus:
+  correctness: 0.40
+  completeness: 0.30
+  code_quality: 0.15
+  security: 0.10
+  clarity: 0.05

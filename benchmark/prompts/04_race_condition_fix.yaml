@@ -1,0 +1,44 @@
+id: "04_race_condition_fix"
+category: "bug_fixing"
+title: "Fix Race Condition"
+prompt: |
+  Fix the race condition in this Python code:
+
+  ```python
+  import threading
+
+  counter = 0
+
+  def increment():
+      global counter
+      for _ in range(100000):
+          temp = counter
+          temp += 1
+          counter = temp
+
+  threads = [threading.Thread(target=increment) for _ in range(4)]
+  for t in threads:
+      t.start()
+  for t in threads:
+      t.join()
+
+  print(f"Final counter: {counter}")
+  # Expected: 400000, but gets much less due to race condition
+  ```
+
+  Provide:
+  1. Explanation of why the race condition occurs
+  2. Fixed code using proper synchronization
+  3. Verification that it now produces correct results
+
+expected_artifacts:
+  - language: "python"
+  - has_explanation: true
+  - has_fix: true
+
+evaluation_focus:
+  correctness: 0.40
+  completeness: 0.25
+  code_quality: 0.15
+  security: 0.10
+  clarity: 0.10

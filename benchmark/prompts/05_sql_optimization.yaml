@@ -1,0 +1,40 @@
+id: "05_sql_optimization"
+category: "bug_fixing"
+title: "Optimize Slow SQL Query"
+prompt: |
+  This SQL query is running very slowly on a large database:
+
+  ```sql
+  SELECT u.user_id, u.username, COUNT(*) as trade_count, SUM(t.amount) as total_volume
+  FROM users u, trades t
+  WHERE u.user_id = t.user_id
+    AND t.trade_date >= '2024-01-01'
+    AND t.trade_date < '2025-01-01'
+    AND t.status = 'completed'
+  GROUP BY u.user_id, u.username
+  ORDER BY total_volume DESC
+  LIMIT 100;
+  ```
+
+  Tables:
+  - users: 1M rows (user_id PK, username, email, created_at)
+  - trades: 100M rows (trade_id PK, user_id, amount, trade_date, status, created_at)
+
+  Provide:
+  1. Explanation of why it's slow
+  2. Optimized query
+  3. Recommended indexes to create
+  4. Expected performance improvement
+
+expected_artifacts:
+  - language: "sql"
+  - has_explanation: true
+  - has_optimized_query: true
+  - has_index_recommendations: true
+
+evaluation_focus:
+  correctness: 0.35
+  completeness: 0.30
+  code_quality: 0.15
+  security: 0.05
+  clarity: 0.15

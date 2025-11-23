@@ -1,0 +1,37 @@
+id: "10_data_pipeline"
+category: "multi_step"
+title: "Complete Data Pipeline: S&P 500 Correlation Analysis"
+prompt: |
+  Build a complete data pipeline that:
+
+  1. Fetches the current list of S&P 500 constituent symbols
+  2. Downloads 1 year of daily historical price data for each symbol
+  3. Calculates daily returns for each stock
+  4. Computes the correlation matrix between all stocks
+  5. Generates a heatmap visualization of the correlation matrix
+  6. Identifies the top 10 most correlated pairs and top 10 least correlated pairs
+  7. Saves results to files (correlation matrix as CSV, heatmap as PNG, pairs as JSON)
+
+  Requirements:
+  - Use Python with pandas, numpy, matplotlib/seaborn
+  - Use a free data source (yfinance is acceptable)
+  - Include error handling for API failures and missing data
+  - Add progress indicators for long-running operations
+  - Make the code modular and reusable
+  - Include example usage/main function
+
+  The output should be a complete, runnable Python script.
+
+expected_artifacts:
+  - language: "python"
+  - has_data_fetching: true
+  - has_calculations: true
+  - has_visualization: true
+  - is_complete_script: true
+
+evaluation_focus:
+  correctness: 0.30
+  completeness: 0.35
+  code_quality: 0.20
+  security: 0.05
+  clarity: 0.10

@@ -1,0 +1,60 @@
+models:
+  orchestrator:
+    id: "moonshotai/kimi-k2-0905"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "Groq"
+    temperature: 0
+    pricing:
+      prompt: 0.0005
+      completion: 0.001
+  context:
+    id: "z-ai/glm-4.6"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "Cerebras"
+    temperature: 0
+    pricing:
+      prompt: 0.002
+      completion: 0.006
+  repro:
+    id: "z-ai/glm-4.6"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "Cerebras"
+    temperature: 0
+    pricing:
+      prompt: 0.002
+      completion: 0.006
+  engineering:
+    id: "qwen/qwen3-coder"
+    base_url: "https://openrouter.ai/api/v1"
+    temperature: 0
+    pricing:
+      prompt: 0.0001
+      completion: 0.0003
+  review:
+    id: "moonshotai/kimi-k2-thinking"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "Groq"
+    temperature: 0
+    pricing:
+      prompt: 0.0005
+      completion: 0.001
+logging:
+  level: INFO
+prompts:
+  context: |
+    You are the context librarian. Given an issue description, propose relevant files
+    and a short context summary as JSON with keys relevant_files and summary.
+    Issue: {issue}
+  repro: |
+    Write a Python reproduction script for the issue as JSON {{"script": "..."}}.
+    Issue: {issue}
+  engineering: |
+    You are the builder. Propose a patch for the issue.
+    Issue: {issue}
+    Context: {context}
+    Relevant files: {files}
+  review: |
+    Review the following patch. Reply with PASS if acceptable, otherwise FAIL.
+    Issue: {issue}
+    Patch:
+    {patch}

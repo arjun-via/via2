@@ -1,0 +1,27 @@
+judge:
+  model: "gpt-4o"
+  provider: "openai"
+  base_url: "https://api.openai.com/v1"
+  temperature: 1
+  pricing:
+    prompt: 0.0025  # GPT-4o pricing per 1k tokens
+    completion: 0.01
+
+systems_under_test:
+  - name: "alo"
+    enabled: true
+  - name: "sonnet_context"
+    enabled: true
+  - name: "sonnet_raw"
+    enabled: true
+
+runs_per_prompt: 1
+
+output:
+  save_raw_outputs: true
+  save_judge_reasoning: true
+  generate_visualizations: false  # Will implement in phase 2
+
+analysis:
+  confidence_level: 0.95
+  significance_threshold: 0.05

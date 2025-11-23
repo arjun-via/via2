@@ -1,0 +1,45 @@
+id: "04_lockfree_queue"
+category: "concurrency"
+title: "Lock-Free Concurrent Queue (MPMC)"
+prompt: |
+  Implement a lock-free multi-producer multi-consumer (MPMC) queue in C++ or Rust.
+
+  Requirements:
+  - Wait-free enqueue and dequeue operations
+  - Handles ABA problem correctly
+  - Proper memory ordering (acquire/release semantics)
+  - No use of locks, mutexes, or OS synchronization primitives
+  - Support arbitrary number of producers and consumers
+  - Memory reclamation (prevent use-after-free)
+
+  Must handle these concurrency scenarios:
+  1. **ABA Problem**: Thread T1 reads head=A, gets preempted. T2 dequeues A, enqueues B, then A again (recycled). T1 resumes and CAS succeeds incorrectly.
+
+  2. **Memory Ordering**: Thread T1 enqueues item X, sets data. Thread T2 dequeues X via CAS but sees stale data due to weak ordering.
+
+  3. **Memory Reclamation**: Node dequeued by T1, T2 still has pointer. T1 frees node. T2 dereferences → crash.
+
+  Provide:
+  - Complete implementation with atomic operations
+  - Detailed comments explaining memory ordering choices
+  - Proof sketch of correctness (linearizability)
+  - Test harness with multiple threads demonstrating correctness
+  - Performance comparison vs mutex-based queue
+
+  Your solution must work correctly on weakly-ordered architectures (ARM).
+
+  Reference for difficulty: This is Michael-Scott queue + hazard pointers territory.
+
+expected_artifacts:
+  - language: "cpp or rust"
+  - has_lockfree_implementation: true
+  - handles_aba_problem: true
+  - correct_memory_ordering: true
+  - has_test_harness: true
+
+evaluation_focus:
+  correctness: 0.50
+  completeness: 0.25
+  code_quality: 0.15
+  security: 0.05
+  clarity: 0.05

@@ -1,0 +1,34 @@
+id: "06_hft_architecture"
+category: "architecture"
+title: "High-Frequency Trading System Design"
+prompt: |
+  Design a microservices architecture for a high-frequency trading (HFT) system with these requirements:
+
+  Requirements:
+  - Process 1M+ market data updates per second
+  - Execute trades with <10ms latency
+  - Handle multiple exchanges (NYSE, NASDAQ, CME)
+  - Risk management checks before every trade
+  - Real-time P&L tracking
+  - Audit logging for all trades
+  - 99.99% uptime
+
+  Provide:
+  1. Architecture diagram (text/ASCII representation)
+  2. List of microservices with responsibilities
+  3. Communication patterns (sync/async, protocols)
+  4. Data storage strategy
+  5. Key technology choices and justification
+  6. Handling of critical failure scenarios
+
+expected_artifacts:
+  - has_architecture_diagram: true
+  - has_service_list: true
+  - has_technology_choices: true
+
+evaluation_focus:
+  correctness: 0.25
+  completeness: 0.35
+  code_quality: 0.10
+  security: 0.15
+  clarity: 0.15

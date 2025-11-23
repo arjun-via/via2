@@ -1,0 +1,65 @@
+id: "09_circuit_breaker_backoff"
+category: "reliability"
+title: "Circuit Breaker with Adaptive Backoff"
+prompt: |
+  Implement a production-grade circuit breaker for an external payment API with sophisticated failure handling.
+
+  Context:
+  Your service calls an external payment processor API. It occasionally:
+  - Times out (5% of requests)
+  - Returns 429 (rate limited)
+  - Returns 500 (their service down)
+  - Returns 503 (overloaded, try again)
+  - Succeeds but takes 10 seconds (slow but works)
+
+  Naive circuit breaker problems:
+  1. **Thundering herd**: Circuit opens, 1000 threads waiting. Circuit closes → all 1000 hit at once → overload → circuit opens again. Infinite loop.
+
+  2. **False opens**: 3 consecutive timeouts → circuit opens. But timeouts were random, API is actually healthy. Now you're rejecting valid requests.
+
+  3. **Slow recovery**: Circuit half-open, single request times out → circuit opens for 60s. But API recovered after 10s. You're losing 50s of potential traffic.
+
+  4. **No differentiation**: 500 error (API down for hours) vs 503 error (retry in 1 second) both treated the same.
+
+  Your circuit breaker must:
+  - Have 3 states: CLOSED, OPEN, HALF-OPEN
+  - Adaptive error threshold (not fixed "5 failures")
+  - Exponential backoff with jitter
+  - Different handling per error type:
+    * 500 → aggressive backoff (1min, 2min, 4min...)
+    * 503 → gentle retry (1s, 2s, 4s...)
+    * Timeout → medium backoff
+    * 429 → respect Retry-After header
+  - Gradual recovery (not binary)
+  - Request shedding (not thundering herd)
+  - Metrics/observability
+  - Thread-safe
+
+  Edge cases:
+  - What if HALF-OPEN state succeeds once, then fails? Reopen or give it more tries?
+  - How do you avoid flapping between OPEN and CLOSED?
+  - What if the API is slow but succeeds (10s response time)? Timeout or accept?
+  - Concurrent requests during state transition?
+
+  Provide:
+  - Complete implementation (Java, Go, or Rust)
+  - State machine diagram
+  - Test scenarios for each edge case
+  - Simulation showing adaptive backoff working
+  - Discussion of trade-offs (availability vs protection)
+
+  Reference: Netflix Hystrix/Resilience4j level complexity.
+
+expected_artifacts:
+  - has_circuit_breaker: true
+  - has_adaptive_backoff: true
+  - prevents_thundering_herd: true
+  - handles_error_types: true
+  - has_test_scenarios: true
+
+evaluation_focus:
+  correctness: 0.40
+  completeness: 0.30
+  code_quality: 0.15
+  security: 0.05
+  clarity: 0.10

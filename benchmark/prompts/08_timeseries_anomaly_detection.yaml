@@ -1,0 +1,72 @@
+id: "08_timeseries_anomaly_detection"
+category: "machine_learning"
+title: "Real-Time Time-Series Anomaly Detection with Concept Drift"
+prompt: |
+  Build an online anomaly detection system for server metrics that adapts to changing patterns.
+
+  Input: Streaming time-series data (1 data point per second)
+  Metrics: CPU usage, memory, request latency, error rate
+
+  Challenges:
+  1. **Concept drift**: Normal behavior changes over time
+     - Monday 2am: 10 QPS is normal
+     - Monday 2pm: 10 QPS is ANOMALY (should be 1000)
+     - Black Friday: baseline shifts 10x
+
+  2. **Seasonality at multiple scales**:
+     - Hourly (lunch spike)
+     - Daily (weekday vs weekend)
+     - Weekly (Sunday dip)
+     - Yearly (holiday traffic)
+
+  3. **Correlated metrics**:
+     - High CPU + low latency = OK (busy but healthy)
+     - Low CPU + high latency = ANOMALY (deadlock?)
+     - All 4 metrics spiking = ANOMALY (attack?)
+
+  4. **Rare events look like anomalies but aren't**:
+     - Deploy at 2am → CPU spike is EXPECTED
+     - Marketing campaign → traffic spike is EXPECTED
+     - How do you incorporate external context?
+
+  5. **Cold start problem**:
+     - New server, no history
+     - What baseline do you use?
+
+  False positive constraints:
+  - Max 1 false alert per day per server (1000 servers = max 1000 FP/day)
+  - Can't afford to page on-call for noise
+
+  Requirements:
+  - Online algorithm (constant memory, no batch retraining)
+  - Adaptive baseline using exponential smoothing or similar
+  - Multi-variate analysis (detect correlated anomalies)
+  - Seasonality decomposition (STL or similar)
+  - Confidence scores (not binary anomaly flag)
+  - Handle missing data and outliers
+  - Performance: process 1000 metrics/second
+
+  Provide:
+  - Complete implementation
+  - Synthetic data generator with drift and seasonality
+  - Demonstration showing:
+    * Normal seasonal pattern NOT flagged
+    * Subtle anomaly correctly detected
+    * Baseline adapts after behavior change
+  - Precision/recall analysis
+
+  This is production observability - LinkedIn, Netflix, etc. do this.
+
+expected_artifacts:
+  - has_online_algorithm: true
+  - handles_concept_drift: true
+  - handles_seasonality: true
+  - multivariate_detection: true
+  - has_evaluation: true
+
+evaluation_focus:
+  correctness: 0.40
+  completeness: 0.30
+  code_quality: 0.15
+  security: 0.05
+  clarity: 0.10

@@ -1,0 +1,72 @@
+id: "08_fix_protocol_parser"
+category: "code_explanation"
+title: "Explain FIX Protocol Parser"
+prompt: |
+  Explain how this FIX protocol message parser works:
+
+  ```python
+  import re
+  from typing import Dict, Optional
+
+  class FIXParser:
+      SOH = '\x01'  # Start of Header delimiter
+
+      def __init__(self, message: str):
+          self.raw = message
+          self.fields: Dict[int, str] = {}
+          self._parse()
+
+      def _parse(self):
+          parts = self.raw.split(self.SOH)
+          for part in parts:
+              if '=' in part:
+                  tag, value = part.split('=', 1)
+                  try:
+                      self.fields[int(tag)] = value
+                  except ValueError:
+                      pass
+
+      def get(self, tag: int, default: Optional[str] = None) -> Optional[str]:
+          return self.fields.get(tag, default)
+
+      def get_msg_type(self) -> Optional[str]:
+          return self.get(35)  # Tag 35 is MsgType
+
+      def get_symbol(self) -> Optional[str]:
+          return self.get(55)  # Tag 55 is Symbol
+
+      def validate_checksum(self) -> bool:
+          if not self.raw.endswith(self.SOH):
+              return False
+
+          # Extract checksum (tag 10)
+          checksum_str = self.get(10)
+          if not checksum_str:
+              return False
+
+          # Calculate expected checksum
+          msg_without_checksum = self.raw.split(f'{self.SOH}10=')[0]
+          calculated = sum(ord(c) for c in msg_without_checksum) % 256
+          expected = int(checksum_str)
+
+          return calculated == expected
+  ```
+
+  Provide:
+  1. High-level explanation of what FIX protocol is
+  2. Step-by-step explanation of how the parser works
+  3. What the SOH delimiter is and why it's used
+  4. How checksum validation works
+  5. Potential issues or edge cases with this implementation
+
+expected_artifacts:
+  - has_protocol_explanation: true
+  - has_code_walkthrough: true
+  - has_edge_cases: true
+
+evaluation_focus:
+  correctness: 0.30
+  completeness: 0.25
+  code_quality: 0.10
+  security: 0.10
+  clarity: 0.25

@@ -1,0 +1,29 @@
+id: "03_binary_search_tree"
+category: "code_generation"
+title: "Binary Search Tree in Rust"
+prompt: |
+  Implement a binary search tree (BST) in Rust with the following operations:
+  - insert(value: i32) -> bool
+  - delete(value: i32) -> bool
+  - search(value: i32) -> bool
+  - in_order_traversal() -> Vec<i32>
+
+  The BST should:
+  - Use proper Rust ownership and borrowing
+  - Handle duplicate values (reject duplicates)
+  - Be memory-safe
+  - Include a Node struct and BST struct
+
+  Include example usage showing insertion, deletion, and traversal.
+
+expected_artifacts:
+  - language: "rust"
+  - has_struct: true
+  - has_methods: true
+
+evaluation_focus:
+  correctness: 0.35
+  completeness: 0.25
+  code_quality: 0.25
+  security: 0.05
+  clarity: 0.10

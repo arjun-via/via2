@@ -1,0 +1,26 @@
+id: "01_sharpe_ratio"
+category: "code_generation"
+title: "Calculate Sharpe Ratio"
+prompt: |
+  Write a Python function to calculate the Sharpe ratio given:
+  - An array of returns (daily or monthly)
+  - A risk-free rate (annualized as a decimal, e.g., 0.02 for 2%)
+
+  The function should:
+  - Handle both daily and monthly returns
+  - Annualize the Sharpe ratio properly (use 252 for daily, 12 for monthly)
+  - Include error handling for edge cases (empty array, all zeros, etc.)
+  - Be well-documented with a clear docstring
+  - Include at least one example usage
+
+expected_artifacts:
+  - language: "python"
+  - has_function: true
+  - has_docstring: true
+
+evaluation_focus:
+  correctness: 0.35
+  completeness: 0.25
+  code_quality: 0.20
+  security: 0.05
+  clarity: 0.15

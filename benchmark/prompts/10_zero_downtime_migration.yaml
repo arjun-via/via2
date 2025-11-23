@@ -1,0 +1,70 @@
+id: "10_zero_downtime_migration"
+category: "system_design"
+title: "Zero-Downtime Database Schema Migration"
+prompt: |
+  Design and implement a zero-downtime migration strategy to add a new column to a high-traffic table.
+
+  Scenario:
+  - Table: `orders` (500M rows, 10k writes/sec)
+  - Current schema: `(id, user_id, amount, created_at)`
+  - New schema: Add `status` column (values: 'pending', 'completed', 'failed')
+  - Constraint: Service must stay online during migration (24/7 uptime SLA)
+  - Database: PostgreSQL (but principles should apply to any SQL DB)
+
+  Migration challenges:
+  1. **Read/Write conflicts during migration**:
+     - Old code doesn't know about `status` column
+     - New code requires `status` column
+     - How do you deploy code and schema changes?
+
+  2. **Backfilling 500M rows**:
+     - Adding column with default locks table for hours
+     - Backfill in small batches? How do you ensure correctness?
+     - What about rows inserted during backfill?
+
+  3. **Rollback scenario**:
+     - New code deployed, bugs found, need to rollback
+     - Database schema already changed
+     - How do you roll back safely?
+
+  4. **Data consistency**:
+     - Old code writes rows without `status`
+     - New code reads rows expecting `status`
+     - NULL handling strategy?
+
+  5. **Performance impact**:
+     - Migration should not degrade service performance
+     - Index creation on 500M rows?
+     - How do you avoid locking?
+
+  Your migration plan must include:
+  - Phase-by-phase deployment steps
+  - Database migration SQL statements
+  - Code deployment strategy (feature flags?)
+  - Backfill strategy with correctness proof
+  - Monitoring/validation at each phase
+  - Rollback procedure for each phase
+  - Performance impact analysis
+
+  Provide:
+  - Detailed migration plan (step-by-step)
+  - SQL migration scripts for each phase
+  - Example code showing old/new compatibility layer
+  - Testing strategy to validate correctness
+  - Timeline and risk assessment
+
+  This is real production database migration - Stripe, Airbnb do this.
+
+expected_artifacts:
+  - has_migration_plan: true
+  - zero_downtime_guarantee: true
+  - handles_backfill: true
+  - has_rollback_strategy: true
+  - has_code_examples: true
+
+evaluation_focus:
+  correctness: 0.35
+  completeness: 0.35
+  code_quality: 0.10
+  security: 0.10
+  clarity: 0.10

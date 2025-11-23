@@ -49,8 +49,9 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
     engineering_client = _safe_client(
         lambda: OpenAICompatibleClient(
             model=models["engineering"]["id"],
-            api_key=os.getenv("CEREBRAS_API_KEY", "") or os.getenv("OPENAI_API_KEY", ""),
+            api_key=_get_api_key_for_url(models["engineering"].get("base_url", "")),
             base_url=models["engineering"].get("base_url"),
+            extra_body=_build_extra_body(models["engineering"]),
             cost_tracker=cost_tracker,
             prompt_cost_per_1k=_pricing(models["engineering"])[0],
             completion_cost_per_1k=_pricing(models["engineering"])[1],
@@ -60,8 +61,9 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
     review_client = _safe_client(
         lambda: OpenAICompatibleClient(
             model=models["review"]["id"],
-            api_key=os.getenv("OPENROUTER_API_KEY", "") or os.getenv("OPENAI_API_KEY", ""),
+            api_key=_get_api_key_for_url(models["review"].get("base_url", "")),
             base_url=models["review"].get("base_url"),
+            extra_body=_build_extra_body(models["review"]),
             cost_tracker=cost_tracker,
             prompt_cost_per_1k=_pricing(models["review"])[0],
             completion_cost_per_1k=_pricing(models["review"])[1],
@@ -103,8 +105,9 @@ def build_prompt_orchestrator(config: Dict[str, Any]) -> PromptOrchestrator:
     review_client = _safe_client(
         lambda: OpenAICompatibleClient(
             model=models["review"]["id"],
-            api_key=os.getenv("OPENROUTER_API_KEY", "") or os.getenv("OPENAI_API_KEY", ""),
+            api_key=_get_api_key_for_url(models["review"].get("base_url", "")),
             base_url=models["review"].get("base_url"),
+            extra_body=_build_extra_body(models["review"]),
             cost_tracker=cost_tracker,
             prompt_cost_per_1k=_pricing(models["review"])[0],
             completion_cost_per_1k=_pricing(models["review"])[1],
@@ -114,8 +117,9 @@ def build_prompt_orchestrator(config: Dict[str, Any]) -> PromptOrchestrator:
     prompt_client = _safe_client(
         lambda: OpenAICompatibleClient(
             model=models["engineering"]["id"],
-            api_key=os.getenv("OPENAI_API_KEY", ""),
+            api_key=_get_api_key_for_url(models["engineering"].get("base_url", "")),
             base_url=models["engineering"].get("base_url"),
+            extra_body=_build_extra_body(models["engineering"]),
             cost_tracker=cost_tracker,
             prompt_cost_per_1k=_pricing(models["engineering"])[0],
             completion_cost_per_1k=_pricing(models["engineering"])[1],
@@ -158,13 +162,41 @@ def _pricing(model_conf: Dict[str, Any]) -> tuple[float, float]:
     return float(pricing.get("prompt", 0.0)), float(pricing.get("completion", 0.0))
 
 
+def _get_api_key_for_url(base_url: str) -> str:
+    """Select the right API key based on the base_url."""
+    if not base_url:
+        return ""
+    if "anthropic.com" in base_url:
+        return os.getenv("ANTHROPIC_API_KEY", "")
+    if "openrouter.ai" in base_url:
+        return os.getenv("OPENROUTER_API_KEY", "")
+    if "cerebras.ai" in base_url:
+        return os.getenv("CEREBRAS_API_KEY", "")
+    # Default to OPENAI_API_KEY for openai.com and others
+    return os.getenv("OPENAI_API_KEY", "")
+
+
+def _build_extra_body(model_conf: Dict[str, Any]) -> Dict[str, Any]:
+    """Build extra_body dict with provider specification if present."""
+    extra_body = {}
+    provider = model_conf.get("provider")
+    if provider:
+        extra_body["provider"] = {"order": [provider]}
+    return extra_body
+
+
 def _context_client_from_config(ctx_conf: Dict[str, Any]):
     base_url = ctx_conf.get("base_url")
     if base_url:
+        cost_tracker = CostTracker.get_instance()
         return OpenAICompatibleClient(
             model=ctx_conf["id"],
-            api_key=os.getenv("OPENROUTER_API_KEY", ""),
+            api_key=_get_api_key_for_url(base_url),
             base_url=base_url,
+            extra_body=_build_extra_body(ctx_conf),
+            cost_tracker=cost_tracker,
+            prompt_cost_per_1k=_pricing(ctx_conf)[0],
+            completion_cost_per_1k=_pricing(ctx_conf)[1],
         )
     return GeminiClient(
         model=ctx_conf["id"],

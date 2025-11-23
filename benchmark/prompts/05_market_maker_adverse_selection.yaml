@@ -1,0 +1,60 @@
+id: "05_market_maker_adverse_selection"
+category: "quantitative_finance"
+title: "Market Maker with Adverse Selection Protection"
+prompt: |
+  Implement a market making algorithm that maintains quotes while protecting against adverse selection.
+
+  Context:
+  You're a market maker for a volatile crypto asset. You must:
+  - Maintain bid/ask quotes continuously
+  - Earn spread while managing inventory risk
+  - Protect against informed traders (adverse selection)
+  - Avoid being "picked off" when true price moves
+
+  Challenging scenarios:
+  1. **Adverse selection**: Large informed order hits your quote right before price moves 5%. How do you detect and avoid?
+
+  2. **Inventory risk**: You're long 1000 BTC (max position). Market drops 2%. Do you:
+     - Stop quoting ask (can't sell more)?
+     - Widen spreads?
+     - Skew quotes (lower bid more than ask)?
+
+  3. **Quote stuffing**: Attacker sends 1000 orders/sec to probe your quotes. How do you:
+     - Detect this pattern?
+     - Adjust dynamically?
+     - Avoid getting picked off during the attack?
+
+  4. **Latency arbitrage**: HFT sees price change on another exchange 10ms before you. They hit your stale quote. How do you prevent this?
+
+  Your implementation should include:
+  - Order book state management
+  - Quote calculation with inventory adjustment
+  - Adverse selection detection (order toxicity score)
+  - Dynamic spread adjustment based on:
+    * Recent volatility
+    * Order flow toxicity
+    * Inventory position
+    * Time since last trade
+  - Kill switch when conditions are too risky
+
+  Provide:
+  - Complete implementation (Python or Rust)
+  - Simulation showing P&L over 1000 trades
+  - Demonstrate adverse selection protection working
+  - Explain your risk model
+
+  This is a real problem - naive market makers lose money fast.
+
+expected_artifacts:
+  - has_quote_management: true
+  - has_inventory_risk: true
+  - has_adverse_selection_detection: true
+  - has_simulation: true
+  - shows_profitability: true
+
+evaluation_focus:
+  correctness: 0.35
+  completeness: 0.35
+  code_quality: 0.15
+  security: 0.05
+  clarity: 0.10

@@ -1,0 +1,80 @@
+id: "02_memory_leak_forensics"
+category: "debugging"
+title: "Production Memory Leak Forensics"
+prompt: |
+  You're given heap dump analysis and logs from a production Node.js service that's experiencing memory leaks. The service handles WebSocket connections for real-time trading data.
+
+  Heap snapshot delta (after 4 hours uptime):
+  ```
+  Constructor          Count    Size
+  (array)             +45234   +89.2 MB
+  (closure)           +12453   +12.1 MB
+  Object              +8934    +5.2 MB
+  Map                 +234     +2.8 MB
+  WeakMap             +123     +0.5 MB
+  ```
+
+  Suspicious log patterns:
+  ```
+  [15:23:41] WebSocket connection #45234 established (client: user_8923)
+  [15:23:42] Subscribed to 523 symbols
+  [15:23:58] WebSocket connection #45234 closed
+  [15:24:01] Warning: EventEmitter max listeners exceeded for 'price-update'
+  [15:24:05] WebSocket connection #45235 established (client: user_8923)
+  [... pattern repeats ...]
+  ```
+
+  Partial code from the service:
+  ```javascript
+  class MarketDataService {
+    constructor() {
+      this.priceFeeds = new Map();
+      this.clientSubscriptions = new Map();
+    }
+
+    handleConnection(ws, clientId) {
+      const subscriptions = [];
+
+      ws.on('subscribe', (symbols) => {
+        symbols.forEach(sym => {
+          if (!this.priceFeeds.has(sym)) {
+            this.priceFeeds.set(sym, new EventEmitter());
+            this.startPriceFeed(sym);
+          }
+          const feed = this.priceFeeds.get(sym);
+          const handler = (price) => ws.send(JSON.stringify({sym, price}));
+          feed.on('price-update', handler);
+          subscriptions.push({sym, handler});
+        });
+        this.clientSubscriptions.set(clientId, subscriptions);
+      });
+
+      ws.on('close', () => {
+        console.log(`Connection ${clientId} closed`);
+        this.clientSubscriptions.delete(clientId);
+      });
+    }
+  }
+  ```
+
+  Your task:
+  1. Identify ALL memory leaks in this code (there are at least 3)
+  2. Explain WHY each leak occurs (reference counting, GC roots, etc.)
+  3. Provide fixed code with detailed comments
+  4. Explain how to prevent these classes of leaks systematically
+  5. Suggest monitoring/alerting to detect similar leaks early
+
+  Bonus: What's the relationship between the EventEmitter warning and the leak?
+
+expected_artifacts:
+  - has_leak_identification: true
+  - has_explanation: true
+  - has_fixed_code: true
+  - has_prevention_strategy: true
+
+evaluation_focus:
+  correctness: 0.45
+  completeness: 0.30
+  code_quality: 0.10
+  security: 0.05
+  clarity: 0.10

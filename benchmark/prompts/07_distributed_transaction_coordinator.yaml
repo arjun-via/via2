@@ -1,0 +1,79 @@
+id: "07_distributed_transaction_coordinator"
+category: "distributed_systems"
+title: "Distributed Transaction Coordinator with Failure Recovery"
+prompt: |
+  Implement a two-phase commit (2PC) transaction coordinator for a distributed payment system.
+
+  System setup:
+  - 1 coordinator node
+  - 5 participant nodes (Payment DB, User DB, Ledger DB, Audit Log, External Bank API)
+  - Unreliable network (messages can be lost, delayed, reordered)
+  - Any node can crash at any time
+
+  Transaction example:
+  ```
+  Transfer $1000 from Alice to Bob:
+  1. Payment DB: Debit Alice's account
+  2. Payment DB: Credit Bob's account
+  3. Ledger DB: Record transaction
+  4. Audit Log: Log for compliance
+  5. External Bank API: Notify bank (can timeout)
+  ```
+
+  Failure scenarios you MUST handle:
+  1. **Coordinator crashes after PREPARE, before COMMIT decision**
+     - Some participants voted YES
+     - System is blocked
+     - How do you recover?
+
+  2. **Participant crashes after voting YES**
+     - Transaction in doubt
+     - Coordinator sends COMMIT
+     - Participant restarts - what state?
+
+  3. **Network partition**
+     - 2 participants unreachable
+     - Do you abort or wait?
+     - Timeout value trade-off?
+
+  4. **External Bank API times out**
+     - Is the external call idempotent?
+     - Did it succeed but response lost?
+     - Compensating transaction needed?
+
+  5. **Coordinator crashes, recovers, coordinator changes**
+     - How does new coordinator learn transaction state?
+     - Persistent log requirements?
+
+  Requirements:
+  - Atomic commit (all or nothing)
+  - Durable state (survives crashes)
+  - Participant and coordinator crash recovery
+  - Timeout handling
+  - Persistent transaction log
+  - Idempotent operations
+  - Demonstrate failure recovery in tests
+
+  Provide:
+  - Coordinator implementation
+  - Participant interface
+  - Recovery protocol
+  - Persistent log format
+  - Test scenarios for each failure case
+  - Discussion of limitations (blocking during partition)
+
+  This is real distributed transactions complexity - no easy answers.
+
+expected_artifacts:
+  - has_2pc_implementation: true
+  - has_crash_recovery: true
+  - has_persistent_log: true
+  - handles_all_failure_scenarios: true
+  - has_test_scenarios: true
+
+evaluation_focus:
+  correctness: 0.45
+  completeness: 0.30
+  code_quality: 0.15
+  security: 0.05
+  clarity: 0.05
