@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 from alo.agentic_loops.context_loop.agent import ContextLoopAgent
 from alo.agentic_loops.core.costs import CostTracker
+from alo.agentic_loops.core.exceptions import ClientInitializationError
 from alo.agentic_loops.core.logging_utils import TraceRecorder, init_logging
 from alo.agentic_loops.core.orchestrator import ALOOrchestrator
 from alo.agentic_loops.core.prompt_orchestrator import PromptOrchestrator
@@ -23,7 +24,20 @@ except ImportError:  # pragma: no cover
     load_dotenv = None
 
 
-def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrator:
+def build_orchestrator(
+    config: Dict[str, Any],
+    repo_path: str,
+    use_flattened_review: bool = False,
+) -> ALOOrchestrator:
+    """Build the ALO orchestrator with all agents configured.
+
+    Args:
+        config: Configuration dictionary from YAML
+        repo_path: Path to the target repository
+        use_flattened_review: If True, engineering-review loop is managed
+            at orchestrator level for explicit control flow visibility.
+            If False (default), engineering handles review internally.
+    """
     models = config["models"]
     prompts = config.get("prompts", {})
     logger = init_logging(log_path="alo.log", level=config.get("logging", {}).get("level", "INFO"))
@@ -71,13 +85,31 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
         name="review",
     )
 
-    context_agent = ContextLoopAgent(context_client, prompt_template=prompts.get("context"))
-    repro_agent = ReproLoopAgent(repro_client, prompt_template=prompts.get("repro"))
-    review_agent = ReviewLoopAgent(review_client, prompt_template=prompts.get("review"))
+    # Create agents with role-specific temperatures from config
+    # Default temperatures: context=0, repro=0, engineering=0.3, review=0
+    context_agent = ContextLoopAgent(
+        context_client,
+        prompt_template=prompts.get("context"),
+        temperature=models["context"].get("temperature"),
+    )
+    repro_agent = ReproLoopAgent(
+        repro_client,
+        prompt_template=prompts.get("repro"),
+        temperature=models["repro"].get("temperature"),
+    )
+    review_agent = ReviewLoopAgent(
+        review_client,
+        prompt_template=prompts.get("review"),
+        temperature=models["review"].get("temperature"),
+    )
+
+    # In flattened mode, engineering doesn't get review_agent (orchestrator handles it)
+    # In nested mode (backward compatible), engineering handles review internally
     engineering_agent = EngineeringLoopAgent(
         engineering_client,
-        review_agent,
+        review_agent=None if use_flattened_review else review_agent,
         prompt_template=prompts.get("engineering"),
+        temperature=models["engineering"].get("temperature"),
     )
 
     return ALOOrchestrator(
@@ -88,6 +120,7 @@ def build_orchestrator(config: Dict[str, Any], repo_path: str) -> ALOOrchestrato
         tool_registry=tool_registry,
         logger=logger,
         trace_recorder=trace_recorder,
+        use_flattened_review=use_flattened_review,
     )
 
 
@@ -127,8 +160,16 @@ def build_prompt_orchestrator(config: Dict[str, Any]) -> PromptOrchestrator:
         name="prompt",
     )
 
-    context_agent = ContextLoopAgent(context_client, prompt_template=prompts.get("context"))
-    review_agent = ReviewLoopAgent(review_client, prompt_template=prompts.get("review"))
+    context_agent = ContextLoopAgent(
+        context_client,
+        prompt_template=prompts.get("context"),
+        temperature=models["context"].get("temperature"),
+    )
+    review_agent = ReviewLoopAgent(
+        review_client,
+        prompt_template=prompts.get("review"),
+        temperature=models["review"].get("temperature"),
+    )
     prompt_agent = PromptLoopAgent(
         prompt_client,
         review_agent,
@@ -144,17 +185,16 @@ def build_prompt_orchestrator(config: Dict[str, Any]) -> PromptOrchestrator:
 
 
 def _safe_client(factory, name: str):
+    """Initialize a client, failing explicitly on error.
+
+    FAIL IS FAIL policy: No silent fallbacks. If client initialization
+    fails, we raise ClientInitializationError with clear diagnostics
+    rather than returning a fake StubClient.
+    """
     try:
         return factory()
-    except Exception:
-        class StubClient:
-            def chat(self, messages, **kwargs):
-                return {"content": f"stub response from {name}"}
-
-            def generate(self, prompt, **kwargs):
-                return f"stub response from {name}"
-
-        return StubClient()
+    except Exception as e:
+        raise ClientInitializationError(name, e) from e
 
 
 def _pricing(model_conf: Dict[str, Any]) -> tuple[float, float]:
@@ -217,6 +257,11 @@ def cli(args: list[str] | None = None) -> None:
         default="config/config.yaml",
         help="Path to config YAML (default: config/config.yaml)",
     )
+    parser.add_argument(
+        "--flattened-review",
+        action="store_true",
+        help="Use flattened review loop (engineering-review at orchestrator level)",
+    )
 
     parsed = parser.parse_args(args)
     config = load_config(parsed.config)
@@ -239,7 +284,11 @@ def cli(args: list[str] | None = None) -> None:
     else:
         if not parsed.issue or not parsed.repo:
             parser.error("--issue and --repo are required unless --prompt is provided")
-        orchestrator = build_orchestrator(config, repo_path=parsed.repo)
+        orchestrator = build_orchestrator(
+            config,
+            repo_path=parsed.repo,
+            use_flattened_review=parsed.flattened_review,
+        )
         orchestrator.run(issue_description=parsed.issue, repo_path=parsed.repo)
 
 

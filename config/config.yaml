@@ -9,6 +9,7 @@ models:
   context:
     id: "google/gemini-2.5-flash-preview-09-2025"
     base_url: "https://openrouter.ai/api/v1"
+    # Temperature 0.0: Deterministic file selection for reproducible results
     temperature: 0
     pricing:
       prompt: 0.00025
@@ -16,6 +17,7 @@ models:
   repro:
     id: "gpt-5.1"
     base_url: "https://api.openai.com/v1"
+    # Temperature 0.0: Accurate code generation for syntactically correct scripts
     temperature: 0
     pricing:
       prompt: 0.002
@@ -23,13 +25,15 @@ models:
   engineering:
     id: "zai-glm-4.6"
     base_url: "https://api.cerebras.ai/v1"
-    temperature: 0
+    # Temperature 0.3: Moderate creativity for exploring fix approaches
+    temperature: 0.3
     pricing:
       prompt: 0.002
       completion: 0.006
   review:
     id: "moonshotai/kimi-k2-0905"
     base_url: "https://openrouter.ai/api/v1"
+    # Temperature 0.0: Strict deterministic pass/fail decisions
     temperature: 0
     pricing:
       prompt: 0.0005

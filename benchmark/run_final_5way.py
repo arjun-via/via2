@@ -1,4 +1,4 @@
-"""Run final 4-way comparison: ALO-Optimized, ALO-Open, ALO-BestInClass, Sonnet+Context."""
+"""Run final 5-way comparison: ALO-Optimized, ALO-Open, ALO-BestInClass, ALO-Sonnet, ALO-Opus."""
 import json
 import os
 import sys
@@ -12,6 +12,7 @@ from benchmark.runners.alo_optimized_runner import ALOOptimizedRunner
 from benchmark.runners.alo_open_runner import ALOOpenRunner
 from benchmark.runners.alo_bestinclass_runner import ALOBestInClassRunner
 from benchmark.runners.alo_sonnet_runner import ALOSonnetRunner
+from benchmark.runners.alo_opus_runner import ALOOpusRunner
 
 try:
     from dotenv import load_dotenv
@@ -141,13 +142,14 @@ def score_solution(prompt_data: dict, solution: str) -> dict:
 
 def main():
     print("=" * 80)
-    print("FINAL 4-WAY COMPARISON")
+    print("FINAL 5-WAY ALO COMPARISON")
     print("=" * 80)
     print("Systems:")
     print("  1. ALO-Optimized (Gemini + Qwen3-Coder + Kimi-K2-Thinking)")
     print("  2. ALO-Open (GLM-4.6 + Qwen3-Coder + Kimi-K2-Thinking)")
     print("  3. ALO-BestInClass (Gemini 3 Pro + Sonnet 4.5 + GPT-5.1)")
     print("  4. ALO-Sonnet (Sonnet 4.5 for all agents)")
+    print("  5. ALO-Opus (Opus 4.5 for all agents)")
     print("=" * 80)
 
     # Initialize runners
@@ -155,11 +157,15 @@ def main():
         "alo_optimized": ALOOptimizedRunner(),
         "alo_open": ALOOpenRunner(),
         "alo_bestinclass": ALOBestInClassRunner(),
-        "alo_sonnet": ALOSonnetRunner()
+        "alo_sonnet": ALOSonnetRunner(),
+        "alo_opus": ALOOpusRunner()
     }
 
     # Run all tests in parallel
-    print("\nPhase 1: Running all 4 systems on 10 prompts (40 tests total)...")
+    num_systems = len(runners)
+    num_prompts = len(HARD_PROMPTS)
+    total_tests = num_systems * num_prompts
+    print(f"\nPhase 1: Running all {num_systems} systems on {num_prompts} prompts ({total_tests} tests total)...")
     print("-" * 80)
 
     tasks = []
@@ -170,7 +176,7 @@ def main():
     overall_start = time.time()
     results = []
 
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {
             executor.submit(run_single_test, runner_name, runner, prompt_data): (runner_name, prompt_data["id"])
             for runner_name, runner, prompt_data in tasks
@@ -188,7 +194,7 @@ def main():
     phase1_elapsed = time.time() - overall_start
 
     # Save outputs
-    output_dir = Path("benchmark/results/final_4way")
+    output_dir = Path("benchmark/results/final_5way")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     solutions_by_system = {name: {} for name in runners.keys()}
@@ -222,10 +228,10 @@ def main():
             solution = solutions_by_system[runner_name].get(prompt_id)
 
             if not solution:
-                print(f"  [{i}/10] {prompt_id} - SKIPPED")
+                print(f"  [{i}/{num_prompts}] {prompt_id} - SKIPPED")
                 continue
 
-            print(f"  [{i}/10] Scoring {prompt_id}...")
+            print(f"  [{i}/{num_prompts}] Scoring {prompt_id}...")
             score = score_solution(prompt_data, solution)
 
             if score:
@@ -291,13 +297,20 @@ def main():
     print(f"\n✓ Results saved: {summary_file}")
 
     # Determine winner
-    winner = max(summary.items(), key=lambda x: x[1]["overall"])
-    print("\n" + "=" * 80)
-    print(f"🏆 WINNER: {winner[0].upper()}")
-    print(f"   Score: {winner[1]['overall']:.2f}/10")
-    print(f"   Cost: ${winner[1]['avg_cost']:.4f}")
-    print(f"   Time: {winner[1]['avg_time']:.1f}s")
-    print("=" * 80)
+    if summary:
+        winner = max(summary.items(), key=lambda x: x[1]["overall"])
+        print("\n" + "=" * 80)
+        print(f"🏆 WINNER: {winner[0].upper()}")
+        print(f"   Score: {winner[1]['overall']:.2f}/10")
+        print(f"   Cost: ${winner[1]['avg_cost']:.4f}")
+        print(f"   Time: {winner[1]['avg_time']:.1f}s")
+        print("=" * 80)
+
+        # Print ranking
+        print("\n📊 FULL RANKING:")
+        sorted_summary = sorted(summary.items(), key=lambda x: x[1]["overall"], reverse=True)
+        for rank, (name, data) in enumerate(sorted_summary, 1):
+            print(f"  {rank}. {name.upper()}: {data['overall']:.2f}/10 | ${data['avg_cost']:.4f} | {data['avg_time']:.1f}s")
 
 
 if __name__ == "__main__":

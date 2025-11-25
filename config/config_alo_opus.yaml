@@ -1,44 +1,39 @@
 models:
   orchestrator:
-    id: "claude-sonnet-4-5-20250929"
+    id: "claude-opus-4-5-20251101"
     base_url: "https://api.anthropic.com/v1"
     temperature: 0
     pricing:
-      prompt: 0.003
-      completion: 0.015
+      prompt: 0.005
+      completion: 0.025
   context:
-    id: "google/gemini-2.5-flash-preview-09-2025"
-    base_url: "https://openrouter.ai/api/v1"
-    # Temperature 0.0: Deterministic file selection
+    id: "claude-opus-4-5-20251101"
+    base_url: "https://api.anthropic.com/v1"
     temperature: 0
     pricing:
-      prompt: 0.00025
-      completion: 0.0005
+      prompt: 0.005
+      completion: 0.025
   repro:
-    id: "gpt-5.1"
-    base_url: "https://api.openai.com/v1"
-    # Temperature 0.0: Accurate code generation
+    id: "claude-opus-4-5-20251101"
+    base_url: "https://api.anthropic.com/v1"
     temperature: 0
     pricing:
-      prompt: 0.002
-      completion: 0.006
+      prompt: 0.005
+      completion: 0.025
   engineering:
-    id: "qwen/qwen3-coder"
-    base_url: "https://openrouter.ai/api/v1"
-    # Temperature 0.3: Moderate creativity for solutions
-    temperature: 0.3
-    pricing:
-      prompt: 0.0001
-      completion: 0.0003
-  review:
-    id: "moonshotai/kimi-k2-thinking"
-    base_url: "https://openrouter.ai/api/v1"
-    provider: "Groq"
-    # Temperature 0.0: Strict deterministic decisions
+    id: "claude-opus-4-5-20251101"
+    base_url: "https://api.anthropic.com/v1"
     temperature: 0
     pricing:
-      prompt: 0.0005
-      completion: 0.001
+      prompt: 0.005
+      completion: 0.025
+  review:
+    id: "claude-opus-4-5-20251101"
+    base_url: "https://api.anthropic.com/v1"
+    temperature: 0
+    pricing:
+      prompt: 0.005
+      completion: 0.025
 logging:
   level: INFO
 prompts:

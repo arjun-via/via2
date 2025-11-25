@@ -1,21 +1,36 @@
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
+from alo.agentic_loops.core.prompts import CONTEXT_PROMPT
 from alo.agentic_loops.core.state import LoopState
+from alo.agentic_loops.core.temperature import RECOMMENDED_TEMPERATURES
 
 
 class ContextLoopAgent:
-    def __init__(self, model_client: Any, prompt_template: str | None = None) -> None:
+    """Agent that identifies relevant files and summarizes codebase context.
+
+    Temperature: 0.0 (deterministic) - We want consistent, reproducible
+    file selection for the same issue every time.
+    """
+
+    def __init__(
+        self,
+        model_client: Any,
+        prompt_template: str | None = None,
+        temperature: Optional[float] = None,
+    ) -> None:
         self.model_client = model_client
-        self.prompt_template = prompt_template or (
-            "You are the context librarian. Given an issue description, propose relevant files "
-            "and a short context summary as JSON with keys relevant_files and summary.\n"
-            "Issue: {issue}"
-        )
+        # Use structured prompt with JSON schema, examples, and guidelines
+        self.prompt_template = prompt_template or CONTEXT_PROMPT
+        # Default to recommended temperature for context role (0.0)
+        self.temperature = temperature if temperature is not None else RECOMMENDED_TEMPERATURES["context"]
 
     def run(self, state: LoopState, tool_registry: Any | None = None) -> LoopState:
         prompt = self.prompt_template.format(issue=state.issue_description)
-        response = self.model_client.chat([{"role": "user", "content": prompt}])
+        response = self.model_client.chat(
+            [{"role": "user", "content": prompt}],
+            temperature=self.temperature,
+        )
         content = response.get("content", "")
         parsed = _parse_context_response(content)
         model_files = parsed.get("relevant_files", [])
