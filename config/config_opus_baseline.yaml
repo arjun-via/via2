@@ -1,0 +1,89 @@
+# =============================================================================
+# Opus Baseline Configuration
+# =============================================================================
+#
+# SINGLE-CALL BASELINE: Opus 4.5 handles everything in one call
+# No orchestration, no multi-agent pipeline
+# Used for benchmark comparison against orchestrated variants
+#
+# This is the "give Opus the problem and let it solve everything" approach
+#
+# Speed Profile: 45 tok/s (single model)
+# Cost Profile: HIGH (but often lower total due to no overhead)
+# Best For: Benchmark baseline, simple tasks, when orchestration overhead isn't worth it
+#
+# =============================================================================
+
+variant_name: "Opus-Baseline"
+variant_description: "Single Opus call - no orchestration overhead"
+
+# Single model configuration (Opus handles everything)
+model:
+  id: "anthropic/claude-opus-4"
+  base_url: "https://openrouter.ai/api/v1"
+  provider: "openrouter"
+  speed_tok_s: 45
+  context_window: 200000
+  temperature: 0.2
+  max_tokens: 16384
+  pricing:
+    prompt: 5.00
+    completion: 25.00
+  capabilities:
+    - code
+    - reasoning
+    - architecture
+    - context
+    - review
+    - premium
+
+# No separate agent configuration - Opus does everything
+orchestration:
+  enabled: false
+  mode: "single_call"
+
+logging:
+  level: INFO
+
+# Single-call system prompt
+system_prompt: |
+  You are Claude Opus 4.5, solving a software engineering task in a single pass.
+
+  APPROACH:
+  1. First, analyze the problem thoroughly
+  2. Identify all relevant context and dependencies
+  3. Plan your solution carefully before coding
+  4. Implement a complete, working solution
+  5. Self-review for correctness, edge cases, and security
+
+  CONSTRAINTS:
+  - Produce immediately executable code
+  - Include all necessary imports
+  - Handle edge cases (empty input, None, type errors)
+  - No TODO comments - implement everything
+  - No external dependencies unless explicitly allowed
+
+  OUTPUT:
+  Return the complete solution with:
+  - Brief analysis of the problem
+  - Your implementation approach
+  - The complete code
+  - Key test cases to verify correctness
+
+# Execution settings
+execution:
+  single_pass: true
+  max_retries: 0  # No retries - single attempt
+  self_review: true  # Opus reviews its own work in the same call
+
+# Benchmark comparison notes
+benchmark_notes: |
+  This baseline configuration is used to compare:
+  1. Orchestrated multi-model approaches vs single Opus call
+  2. When orchestration overhead is beneficial vs wasteful
+  3. Task complexity threshold for orchestration value
+
+  Expected results:
+  - Simple tasks: Baseline often wins (no overhead)
+  - Complex tasks: Orchestrated variants should win (specialized agents)
+  - Very complex tasks: Opus-Full may match baseline (both use Opus)

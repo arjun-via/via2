@@ -1,0 +1,152 @@
+{
+  "performance_data": {
+    "kimi-k2": {
+      "io_operations": {
+        "small": {
+          "easy": {
+            "model_id": "kimi-k2",
+            "task_type": "io_operations",
+            "context_size": "small",
+            "difficulty": "easy",
+            "attempts": 3,
+            "successes": 2,
+            "total_time": 31.77046799659729,
+            "total_cost": 0.0006251
+          },
+          "medium": {
+            "model_id": "kimi-k2",
+            "task_type": "io_operations",
+            "context_size": "small",
+            "difficulty": "medium",
+            "attempts": 1,
+            "successes": 0,
+            "total_time": 15.641739845275879,
+            "total_cost": 0.00035
+          }
+        }
+      },
+      "math": {
+        "small": {
+          "easy": {
+            "model_id": "kimi-k2",
+            "task_type": "math",
+            "context_size": "small",
+            "difficulty": "easy",
+            "attempts": 2,
+            "successes": 2,
+            "total_time": 8.36613130569458,
+            "total_cost": 0.00023646000000000005
+          }
+        }
+      }
+    },
+    "qwen3-coder": {
+      "io_operations": {
+        "small": {
+          "easy": {
+            "model_id": "qwen3-coder",
+            "task_type": "io_operations",
+            "context_size": "small",
+            "difficulty": "easy",
+            "attempts": 2,
+            "successes": 1,
+            "total_time": 10.434516668319702,
+            "total_cost": 0.0010542
+          }
+        }
+      }
+    },
+    "opus-4.5": {
+      "io_operations": {
+        "small": {
+          "easy": {
+            "model_id": "opus-4.5",
+            "task_type": "io_operations",
+            "context_size": "small",
+            "difficulty": "easy",
+            "attempts": 2,
+            "successes": 2,
+            "total_time": 43.25701332092285,
+            "total_cost": 0.08009000000000001
+          }
+        }
+      },
+      "math": {
+        "small": {
+          "easy": {
+            "model_id": "opus-4.5",
+            "task_type": "math",
+            "context_size": "small",
+            "difficulty": "easy",
+            "attempts": 1,
+            "successes": 1,
+            "total_time": 4.494982957839966,
+            "total_cost": 0.00664
+          },
+          "medium": {
+            "model_id": "opus-4.5",
+            "task_type": "math",
+            "context_size": "small",
+            "difficulty": "medium",
+            "attempts": 1,
+            "successes": 1,
+            "total_time": 4.887381076812744,
+            "total_cost": 0.009065
+          }
+        }
+      }
+    },
+    "gemini-2.5-flash": {
+      "io_operations": {
+        "small": {
+          "medium": {
+            "model_id": "gemini-2.5-flash",
+            "task_type": "io_operations",
+            "context_size": "small",
+            "difficulty": "medium",
+            "attempts": 1,
+            "successes": 0,
+            "total_time": 33.551379919052124,
+            "total_cost": 0.00467115
+          }
+        }
+      }
+    },
+    "glm-4.6": {
+      "math": {
+        "small": {
+          "easy": {
+            "model_id": "glm-4.6",
+            "task_type": "math",
+            "context_size": "small",
+            "difficulty": "easy",
+            "attempts": 1,
+            "successes": 1,
+            "total_time": 0.6856236457824707,
+            "total_cost": 0.0016174
+          },
+          "medium": {
+            "model_id": "glm-4.6",
+            "task_type": "math",
+            "context_size": "small",
+            "difficulty": "medium",
+            "attempts": 1,
+            "successes": 1,
+            "total_time": 1.3413310050964355,
+            "total_cost": 0.0023674
+          }
+        }
+      }
+    }
+  },
+  "routing_rules": {},
+  "total_tasks": 15,
+  "total_successes": 11,
+  "models_tested": [
+    "kimi-k2",
+    "qwen3-coder",
+    "opus-4.5",
+    "gemini-2.5-flash",
+    "glm-4.6"
+  ]
+}

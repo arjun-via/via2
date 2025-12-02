@@ -1,0 +1,160 @@
+# =============================================================================
+# Opus Meta-Orchestrator: OPTIMIZED Variant Configuration
+# =============================================================================
+#
+# Best balance of speed, cost, and quality
+# Uses Gemini for context (1M window), fast models for engineering, diverse review
+#
+# Speed Profile: BALANCED (90-735 tok/s depending on phase)
+# Cost Profile: MODERATE
+# Best For: Most production tasks, standard feature development
+#
+# =============================================================================
+
+variant_name: "Opus-Optimized"
+variant_description: "Best cost/quality balance with provider diversification"
+
+# Opus Meta-Orchestrator (always Opus for planning)
+meta_orchestrator:
+  id: "anthropic/claude-opus-4"
+  base_url: "https://openrouter.ai/api/v1"
+  provider: "openrouter"
+  temperature: 0
+  pricing:
+    prompt: 5.00
+    completion: 25.00
+
+models:
+  # Context Agent: Gemini 2.5 Pro via OpenRouter (90 tok/s, 1M context)
+  context:
+    id: "google/gemini-2.5-pro-preview"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "openrouter"
+    speed_tok_s: 90
+    context_window: 1000000
+    temperature: 0
+    pricing:
+      prompt: 2.00
+      completion: 12.00
+    capabilities:
+      - context
+      - reasoning
+      - large-context
+
+  # Engineering Agent: Qwen3-235B via Cerebras (735 tok/s)
+  engineering:
+    id: "qwen-3-235b-a22b-instruct-2507"
+    base_url: "https://api.cerebras.ai/v1"
+    provider: "cerebras"
+    speed_tok_s: 735
+    temperature: 0.3
+    pricing:
+      prompt: 0.60
+      completion: 1.20
+    capabilities:
+      - code
+      - reasoning
+      - fast
+
+  # Review Agent: Kimi K2 via Groq (323 tok/s)
+  # Different provider (Groq) vs Engineering (Cerebras) to avoid model collapse
+  review:
+    id: "moonshotai/kimi-k2-instruct-0905"
+    base_url: "https://api.groq.com/openai/v1"
+    provider: "groq"
+    speed_tok_s: 323
+    temperature: 0
+    pricing:
+      prompt: 0.20
+      completion: 0.20
+    capabilities:
+      - code
+      - review
+      - agentic
+
+  # Reproduction Agent: GPT-5.1 via OpenAI (72 tok/s)
+  repro:
+    id: "gpt-5.1"
+    base_url: "https://api.openai.com/v1"
+    provider: "openai"
+    speed_tok_s: 72
+    temperature: 0
+    pricing:
+      prompt: 1.25
+      completion: 10.00
+    capabilities:
+      - code
+      - reasoning
+      - premium
+
+# Model upgrade path when retry needed
+upgrade_path:
+  "qwen-3-235b-a22b-instruct-2507": "gpt-5.1"
+  "zai-glm-4.6": "gpt-5.1"
+  "gpt-5.1": "anthropic/claude-sonnet-4"
+  "anthropic/claude-sonnet-4": "anthropic/claude-opus-4"
+
+# Allowed models for this variant
+allowed_models:
+  - "gemini-2.5-pro"
+  - "qwen3-235b"
+  - "glm-4.6"
+  - "kimi-k2"
+  - "kimi-k2-thinking"
+  - "gpt-5.1"
+
+logging:
+  level: INFO
+
+# Archetype strategies for this variant
+archetype_strategies:
+  quick_fix:
+    context: "gemini-2.5-pro"  # Fast context scan
+    engineering: "qwen3-235b"  # Fastest code gen
+    review: "kimi-k2"
+    max_retries: 2
+
+  feature_build:
+    context: "gemini-2.5-pro"
+    engineering: "qwen3-235b"  # Start fast
+    review: "kimi-k2"
+    max_retries: 3
+    # Upgrade to gpt-5.1 if first attempt fails
+
+  architecture:
+    context: "gemini-2.5-pro"  # Full codebase scan
+    engineering: "gpt-5.1"     # Premium for architecture
+    review: "kimi-k2-thinking" # Deep analysis
+    max_retries: 3
+
+  haystack:
+    context: "gemini-2.5-pro"  # 1M context window essential
+    engineering: "qwen3-235b"
+    review: "kimi-k2"
+    max_retries: 3
+
+  concurrency:
+    context: "gemini-2.5-pro"
+    engineering: "gpt-5.1"     # Premium for thread safety
+    review: "kimi-k2-thinking" # Deep analysis of race conditions
+    max_retries: 4
+
+# Feature-based execution settings
+feature_execution:
+  max_retries_per_feature: 3
+  checkpoint_after_feature: true
+  clean_state_validation: true
+
+# Provider diversification rules (avoid model collapse)
+provider_diversification:
+  enabled: true
+  rules:
+    - "Engineering provider must differ from Review provider"
+    - "Never use same model for Engineering and Review"
+  good_combinations:
+    - engineering: "cerebras"
+      review: "groq"
+    - engineering: "openai"
+      review: "anthropic"
+    - engineering: "cerebras"
+      review: "openrouter"

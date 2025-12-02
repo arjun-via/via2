@@ -1,17 +1,53 @@
-# ALO vs Sonnet 4.5 Benchmark Suite
+# Via2 Benchmark Suite
 
-Comprehensive evaluation framework comparing three approaches:
-- **ALO**: Multi-agent system (Context → Prompt → Review)
-- **Sonnet+Context**: Claude Sonnet 4.5 with context injection
-- **Sonnet Raw**: Claude Sonnet 4.5 baseline (no context)
+Comprehensive evaluation framework for the three Via2 agent systems.
 
-## Quick Start
+## Three Systems
 
-### Prerequisites
+| System | Description | Entry Point | Best For |
+|--------|-------------|-------------|----------|
+| **ALO** | Multi-model pipeline (Gemini→GPT→GLM→Kimi) | `python main.py` | Complex multi-step tasks |
+| **Opus Orchestrator** | Single-model Docker loop (Opus 4.5) | `python benchmark/run_opus_agentic.py` | SWE-bench bug fixes |
+| **Dynamic** | Adaptive model selection | Config-based | Cost-optimized execution |
+
+---
+
+## Running Benchmarks
+
+### Opus Orchestrator (SWE-bench)
+
+```bash
+# Run 5 random instances
+python benchmark/run_opus_agentic.py --num 5 --random --output results.jsonl
+
+# Run 25 with specific seed
+python benchmark/run_opus_agentic.py --num 25 --random --seed 2024 --cost-limit 15.0 --output test.jsonl
+
+# Run sequential
+python benchmark/run_opus_agentic.py --num 10 --start 0 --output sequential.jsonl
+```
+
+### ALO System (General Benchmarks)
+
+```bash
+# Run prompt benchmark
+python benchmark/run_benchmark.py --prompts all
+
+# Run specific prompts
+python benchmark/run_benchmark.py --prompts "01_sharpe_ratio,02_websocket_server"
+```
+
+### Dynamic System
+
+Uses configuration files in `config/config_opus_meta_*.yaml`
+
+---
+
+## Prerequisites
 
 ```bash
 # Install dependencies
-pip install anthropic
+pip install anthropic datasets docker
 
 # Set environment variables in .env
 ANTHROPIC_API_KEY=...
@@ -20,138 +56,112 @@ GEMINI_API_KEY=...
 CEREBRAS_API_KEY=...
 ```
 
-### Run Full Benchmark
+---
 
-```bash
-# Run all 10 prompts
-python benchmark/run_benchmark.py --prompts all
+## Benchmark Structure
 
-# Run specific prompts
-python benchmark/run_benchmark.py --prompts "01_sharpe_ratio,02_websocket_server"
+### SWE-bench Benchmarks (Opus Orchestrator)
 
-# Specify custom output directory
-python benchmark/run_benchmark.py --prompts all --output-dir benchmark/results/my_run
+Uses `princeton-nlp/SWE-bench_Verified` dataset (500 instances).
+
+**Output Structure:**
+```
+opus_agentic_results.jsonl              # Predictions (SWE-bench format)
+opus_agentic_results_trajectories/      # Detailed trajectories
+├── astropy__astropy-12907.traj.json
+├── django__django-11299.traj.json
+└── ...
 ```
 
-### Generate Report
+### Prompt Benchmarks (ALO)
 
+10 diverse prompts across categories:
+1. **Code Generation**: Python, Node.js, Rust
+2. **Bug Fixing**: Threading, SQL optimization
+3. **Architecture**: System design
+4. **Refactoring**: Legacy code cleanup
+
+**Output Structure:**
+```
+benchmark/results/run_TIMESTAMP/
+├── summary.json
+├── report.md
+├── 01_sharpe_ratio/
+│   ├── alo_output.txt
+│   ├── sonnet_context_output.txt
+│   └── evaluation.json
+└── ...
+```
+
+---
+
+## Key Metrics
+
+### Opus Orchestrator Metrics
+- **Patch Rate**: % instances with generated patches
+- **Resolution Rate**: % instances passing SWE-bench evaluation
+- **Cost per Instance**: ~$2/instance average
+- **Steps per Instance**: 12-21 typical
+
+### ALO Metrics
+- **Quality Score**: 1-10 from o3-mini judge
+- **Cost**: USD per response
+- **Cost-Efficiency**: $ per quality point
+- **Win Rate**: % of prompts where system won
+
+---
+
+## Evaluation
+
+### SWE-bench Evaluation
+```bash
+# Run evaluation harness
+python -m swebench.harness.run_evaluation \
+    --dataset_name princeton-nlp/SWE-bench_Verified \
+    --predictions_path results.jsonl \
+    --max_workers 8 \
+    --run_id my_eval
+```
+
+### Report Generation
 ```bash
 # After benchmark completes
 python benchmark/analysis/report_generator.py benchmark/results/run_TIMESTAMP
 ```
 
-## Benchmark Structure
+---
 
-### 10 Diverse Prompts
+## Adding New Benchmarks
 
-1. **01_sharpe_ratio** (Code Generation): Python financial calculation
-2. **02_websocket_server** (Code Generation): Node.js WebSocket server
-3. **03_binary_search_tree** (Code Generation): Rust data structure
-4. **04_race_condition_fix** (Bug Fixing): Python threading bug
-5. **05_sql_optimization** (Bug Fixing): SQL query optimization
-6. **06_hft_architecture** (Architecture): High-frequency trading system design
-7. **07_api_caching_strategy** (Architecture): Caching design for stock quotes
-8. **08_fix_protocol_parser** (Code Explanation): FIX protocol walkthrough
-9. **09_refactor_monolith** (Refactoring): Clean up 200-line function
-10. **10_data_pipeline** (Multi-step): S&P 500 correlation analysis pipeline
+### New SWE-bench Run
+Edit `benchmark/run_opus_agentic.py`:
+- `--num`: Number of instances
+- `--random`: Random vs sequential selection
+- `--seed`: Reproducibility seed
+- `--cost-limit`: Max cost per instance
 
-### Evaluation Dimensions
-
-Each solution scored 1-10 on:
-- **Correctness**: Logic soundness, meets requirements
-- **Completeness**: All requirements addressed, edge cases handled
-- **Code Quality**: Readable, maintainable, idiomatic
-- **Security**: No vulnerabilities, best practices
-- **Clarity**: Well-documented, easy to understand
-
-Judge: **o3-mini-high** via OpenRouter (advanced reasoning model)
-
-## Output Structure
-
-```
-benchmark/results/run_TIMESTAMP/
-├── summary.json                    # High-level metadata
-├── report.md                       # Generated report
-├── 01_sharpe_ratio/
-│   ├── alo_output.txt
-│   ├── alo_metadata.json
-│   ├── sonnet_context_output.txt
-│   ├── sonnet_context_metadata.json
-│   ├── sonnet_raw_output.txt
-│   ├── sonnet_raw_metadata.json
-│   └── evaluation.json
-├── 02_websocket_server/
-│   └── ...
-└── ...
-```
-
-## Key Metrics
-
-- **Quality Score**: Overall 1-10 rating from judge
-- **Cost**: USD spent on API calls
-- **Time**: Elapsed seconds
-- **Cost-Efficiency**: $ per quality point
-- **Win Rate**: % of prompts where system won
-
-## Adding New Prompts
-
-Create a YAML file in `benchmark/prompts/`:
-
+### New Prompt
+Create YAML in `benchmark/prompts/`:
 ```yaml
 id: "11_new_prompt"
 category: "code_generation"
 title: "Short Title"
 prompt: |
-  Full prompt text here...
-
-expected_artifacts:
-  - language: "python"
-  - has_function: true
-
-evaluation_focus:
-  correctness: 0.35
-  completeness: 0.25
-  code_quality: 0.20
-  security: 0.10
-  clarity: 0.10
+  Full prompt text...
 ```
 
-## Architecture Notes
-
-- **ALO Runner**: Reuses existing `PromptOrchestrator` from main repo
-- **Sonnet Runners**: Direct Anthropic API calls with/without context
-- **Judge**: OpenRouter proxy to o3-mini-high
-- **Fair Comparison**: Sonnet+Context receives same context ALO generates
-- **Cost Tracking**: All API calls logged with token counts and costs
+---
 
 ## Configuration
 
-Edit `benchmark/config_benchmark.yaml`:
+### Opus Orchestrator Config
+- Model: `claude-opus-4-5-20251101`
+- Max steps: 30
+- Cost limit: $10-15/instance
 
-```yaml
-judge:
-  model: "openai/o3-mini-high"
-  provider: "openrouter"
-  temperature: 1
+### ALO Config
+See `config/config.yaml` and variants.
 
-runs_per_prompt: 1  # Increase for variance analysis
-```
+---
 
-## Troubleshooting
-
-**API Key Errors**: Ensure all keys are set in `.env` file
-
-**Import Errors**: Run from project root with `PYTHONPATH=.`
-
-**Judge Parse Errors**: o3-mini may wrap JSON in markdown - parser handles this
-
-**Out of Memory**: Large outputs cached in memory - reduce prompts or add streaming
-
-## Future Enhancements
-
-- [ ] Multiple runs per prompt for statistical significance
-- [ ] Visualization charts (quality vs cost scatter plots)
-- [ ] Human evaluation validation
-- [ ] Additional systems (GPT-4o, Claude Opus)
-- [ ] Automated code execution tests
-- [ ] Prompt difficulty scoring
+*Part of the Via2 Agent Systems Repository*

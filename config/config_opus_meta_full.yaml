@@ -1,0 +1,147 @@
+# =============================================================================
+# Opus Meta-Orchestrator: FULL OPUS Variant Configuration
+# =============================================================================
+#
+# Opus 4.5 for ALL roles (planning, context, engineering, review)
+# Maximum intelligence, minimum speed
+#
+# Speed Profile: SLOWEST (45 tok/s)
+# Cost Profile: HIGHEST
+# Best For: Expert-level tasks, when nothing else works, research
+#
+# =============================================================================
+
+variant_name: "Opus-Full"
+variant_description: "Full Opus stack for maximum intelligence"
+
+# Opus Meta-Orchestrator
+meta_orchestrator:
+  id: "anthropic/claude-opus-4"
+  base_url: "https://openrouter.ai/api/v1"
+  provider: "openrouter"
+  temperature: 0
+  pricing:
+    prompt: 5.00
+    completion: 25.00
+
+models:
+  # Context Agent: Opus 4.5
+  context:
+    id: "anthropic/claude-opus-4"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "openrouter"
+    speed_tok_s: 45
+    context_window: 200000
+    temperature: 0
+    pricing:
+      prompt: 5.00
+      completion: 25.00
+    capabilities:
+      - code
+      - reasoning
+      - architecture
+      - premium
+
+  # Engineering Agent: Opus 4.5
+  engineering:
+    id: "anthropic/claude-opus-4"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "openrouter"
+    speed_tok_s: 45
+    temperature: 0.2
+    pricing:
+      prompt: 5.00
+      completion: 25.00
+    capabilities:
+      - code
+      - reasoning
+      - architecture
+      - premium
+
+  # Review Agent: Opus 4.5
+  # Note: Same model but acceptable for highest quality tier
+  review:
+    id: "anthropic/claude-opus-4"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "openrouter"
+    speed_tok_s: 45
+    temperature: 0
+    pricing:
+      prompt: 5.00
+      completion: 25.00
+    capabilities:
+      - code
+      - reasoning
+      - review
+      - premium
+
+  # Reproduction Agent: Opus 4.5
+  repro:
+    id: "anthropic/claude-opus-4"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "openrouter"
+    speed_tok_s: 45
+    temperature: 0
+    pricing:
+      prompt: 5.00
+      completion: 25.00
+    capabilities:
+      - code
+      - reasoning
+      - premium
+
+# No upgrade path needed - already at maximum
+upgrade_path: {}
+
+# Only Opus allowed
+allowed_models:
+  - "opus-4.5"
+
+logging:
+  level: INFO
+
+# Archetype strategies for this variant (all use Opus)
+archetype_strategies:
+  quick_fix:
+    context: "opus-4.5"
+    engineering: "opus-4.5"
+    review: "opus-4.5"
+    max_retries: 2
+
+  feature_build:
+    context: "opus-4.5"
+    engineering: "opus-4.5"
+    review: "opus-4.5"
+    max_retries: 3
+
+  architecture:
+    context: "opus-4.5"
+    engineering: "opus-4.5"
+    review: "opus-4.5"
+    max_retries: 3
+
+  haystack:
+    context: "opus-4.5"
+    engineering: "opus-4.5"
+    review: "opus-4.5"
+    max_retries: 3
+
+  concurrency:
+    context: "opus-4.5"
+    engineering: "opus-4.5"
+    review: "opus-4.5"
+    max_retries: 4
+
+# Feature-based execution settings
+feature_execution:
+  max_retries_per_feature: 2  # Fewer retries since Opus is definitive
+  checkpoint_after_feature: true
+  clean_state_validation: true
+  opus_takeover_threshold: 1  # Already Opus, no takeover needed
+
+# Cost warning
+cost_warning: |
+  WARNING: This variant uses Opus 4.5 for ALL operations.
+  Estimated cost per task: $0.50 - $5.00
+  Use only for critical, complex, or high-stakes tasks.
+  Consider "Opus-Optimized" for most production work.

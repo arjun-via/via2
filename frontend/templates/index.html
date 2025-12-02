@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opus Meta-Orchestrator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-purple: #a371f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.disconnected {
+            background: var(--accent-red);
+            animation: none;
+        }
+
+        .status-indicator.running {
+            background: var(--accent-yellow);
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: var(--bg-tertiary);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-body {
+            padding: 16px;
+        }
+
+        /* Input Section */
+        .input-section {
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        select, textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        select:focus, textarea:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: 'SF Mono', 'Menlo', monospace;
+        }
+
+        .preset-info {
+            margin-top: 8px;
+            padding: 12px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .preset-info .models {
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4c9aed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Execution Log */
+        .log-container {
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: 13px;
+        }
+
+        .log-entry {
+            display: flex;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 12px;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            width: 85px;
+        }
+
+        .log-stage {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            flex-shrink: 0;
+            width: 100px;
+            text-align: center;
+        }
+
+        .log-stage.orchestrator { background: var(--accent-purple); }
+        .log-stage.context { background: var(--accent-blue); }
+        .log-stage.engineering { background: var(--accent-green); }
+        .log-stage.review { background: var(--accent-yellow); color: #000; }
+        .log-stage.baseline { background: var(--accent-purple); }
+        .log-stage.execution { background: #f0883e; }
+
+        .log-message {
+            flex: 1;
+        }
+
+        .log-status {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+
+        .log-status.started { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+        .log-status.completed { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .log-status.error { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+
+        .log-metrics {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .model-badge {
+            background: rgba(136, 46, 224, 0.3);
+            color: #c084fc;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        .output-preview {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 150px;
+            overflow-y: auto;
+            border-left: 3px solid var(--border-color);
+        }
+
+        .log-entry {
+            flex-direction: column;
+        }
+
+        .log-entry-header {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Metrics Panel */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: var(--bg-primary);
+            padding: 16px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .metric-value.success { color: var(--accent-green); }
+        .metric-value.error { color: var(--accent-red); }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Results Panel */
+        .result-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+        }
+
+        .result-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .result-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .result-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .result-content {
+            display: none;
+            padding: 16px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .result-content.active {
+            display: block;
+        }
+
+        .code-block {
+            background: var(--bg-primary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: 13px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* Model info tooltip */
+        .model-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 2px;
+        }
+
+        .model-badge .speed {
+            color: var(--accent-green);
+        }
+
+        .model-badge .price {
+            color: var(--accent-yellow);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span class="status-indicator" id="statusIndicator"></span>
+                Opus Meta-Orchestrator
+            </h1>
+            <div id="connectionStatus" style="color: var(--text-secondary); font-size: 14px;">
+                Connecting...
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left Column: Input & Logs -->
+            <div class="left-column">
+                <!-- Input Panel -->
+                <div class="panel input-section">
+                    <div class="panel-header">Configuration</div>
+                    <div class="panel-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="presetSelect">Variant Preset</label>
+                                <select id="presetSelect">
+                                    {% for preset in presets %}
+                                    <option value="{{ preset.id }}" {% if preset.id == 'opus-optimized' %}selected{% endif %}>
+                                        {{ preset.name }}
+                                    </option>
+                                    {% endfor %}
+                                    <option value="baseline">Opus Baseline (Single Call)</option>
+                                </select>
+                                <div class="preset-info" id="presetInfo"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="repoPath">Repository Path (optional)</label>
+                                <input type="text" id="repoPath" placeholder="/path/to/repo">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="taskInput">Task / Prompt</label>
+                            <textarea id="taskInput" placeholder="Describe the coding task you want the orchestrator to solve...
+
+Example: Implement a binary search tree with insert, delete, and search operations. Include proper balancing."></textarea>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn-primary" id="runBtn" onclick="runTask()">
+                                Run Task
+                            </button>
+                            <button class="btn-secondary" id="clearBtn" onclick="clearAll()">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Execution Log Panel -->
+                <div class="panel" style="margin-top: 24px;">
+                    <div class="panel-header">
+                        Execution Log
+                        <span id="logCount" style="color: var(--text-secondary); font-weight: normal;">0 events</span>
+                    </div>
+                    <div class="log-container" id="logContainer">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div>Run a task to see execution logs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Metrics & Results -->
+            <div class="right-column">
+                <!-- Metrics Panel -->
+                <div class="panel">
+                    <div class="panel-header">Metrics</div>
+                    <div class="panel-body">
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-value" id="metricTime">--</div>
+                                <div class="metric-label">Time (seconds)</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="metricCost">--</div>
+                                <div class="metric-label">Cost ($)</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="metricFeatures">--</div>
+                                <div class="metric-label">Features</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="metricStatus">--</div>
+                                <div class="metric-label">Status</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="panel" style="margin-top: 24px;">
+                    <div class="result-tabs">
+                        <div class="result-tab active" data-tab="code" onclick="switchTab('code')">Code</div>
+                        <div class="result-tab" data-tab="full" onclick="switchTab('full')">Full Response</div>
+                        <div class="result-tab" data-tab="plan" onclick="switchTab('plan')">Plan</div>
+                    </div>
+                    <div class="result-content active" id="codeTab">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💻</div>
+                            <div>Code output will appear here</div>
+                        </div>
+                    </div>
+                    <div class="result-content" id="fullTab">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <div>Full response will appear here</div>
+                        </div>
+                    </div>
+                    <div class="result-content" id="planTab">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div>Execution plan will appear here</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preset data from server
+        const presetsData = {{ presets | tojson }};
+        const modelsData = {{ models | tojson }};
+
+        // WebSocket connection
+        let socket = null;
+        let isRunning = false;
+        let logCount = 0;
+
+        function initSocket() {
+            socket = io();
+
+            socket.on('connect', () => {
+                console.log('Connected to server');
+                document.getElementById('statusIndicator').classList.remove('disconnected');
+                document.getElementById('connectionStatus').textContent = 'Connected';
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+                document.getElementById('statusIndicator').classList.add('disconnected');
+                document.getElementById('connectionStatus').textContent = 'Disconnected';
+            });
+
+            socket.on('connected', (data) => {
+                console.log('Session ID:', data.sid);
+            });
+
+            socket.on('run_started', (data) => {
+                isRunning = true;
+                document.getElementById('runBtn').disabled = true;
+                document.getElementById('statusIndicator').classList.add('running');
+                document.getElementById('connectionStatus').textContent = 'Running...';
+                clearLogs();
+                resetMetrics();
+            });
+
+            socket.on('stage_log', (data) => {
+                addLogEntry(data);
+            });
+
+            socket.on('debug_log', (data) => {
+                console.log('[DEBUG]', data.message);
+            });
+
+            socket.on('run_completed', (data) => {
+                isRunning = false;
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('statusIndicator').classList.remove('running');
+                document.getElementById('connectionStatus').textContent = 'Connected';
+
+                // Update metrics
+                document.getElementById('metricTime').textContent = data.elapsed_seconds.toFixed(1);
+                document.getElementById('metricCost').textContent = '$' + data.total_cost.toFixed(4);
+                document.getElementById('metricFeatures').textContent =
+                    data.features_completed + '/' + data.features_total;
+
+                const statusEl = document.getElementById('metricStatus');
+                if (data.success) {
+                    statusEl.textContent = 'PASS';
+                    statusEl.className = 'metric-value success';
+                } else {
+                    statusEl.textContent = 'FAIL';
+                    statusEl.className = 'metric-value error';
+                }
+
+                // Update results tabs
+                updateResults(data);
+            });
+
+            socket.on('run_error', (data) => {
+                isRunning = false;
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('statusIndicator').classList.remove('running');
+                document.getElementById('connectionStatus').textContent = 'Error';
+
+                addLogEntry({
+                    timestamp: new Date().toTimeString().split(' ')[0],
+                    stage: 'error',
+                    status: 'error',
+                    message: data.error,
+                });
+
+                const statusEl = document.getElementById('metricStatus');
+                statusEl.textContent = 'ERROR';
+                statusEl.className = 'metric-value error';
+            });
+
+            socket.on('error', (data) => {
+                alert('Error: ' + data.message);
+            });
+        }
+
+        function updatePresetInfo() {
+            const select = document.getElementById('presetSelect');
+            const infoDiv = document.getElementById('presetInfo');
+            const selectedId = select.value;
+
+            if (selectedId === 'baseline') {
+                infoDiv.innerHTML = `
+                    <div><strong>Single Opus 4.5 call</strong></div>
+                    <div class="models">No orchestration - direct model call for comparison</div>
+                `;
+                return;
+            }
+
+            const preset = presetsData.find(p => p.id === selectedId);
+            if (preset) {
+                const modelBadges = preset.models.map(m => {
+                    const model = modelsData.find(md => md.id === m);
+                    if (model) {
+                        return `<span class="model-badge">${m} <span class="speed">${model.speed_tok_s} t/s</span></span>`;
+                    }
+                    return `<span class="model-badge">${m}</span>`;
+                }).join(' ');
+
+                infoDiv.innerHTML = `
+                    <div><strong>${preset.description}</strong></div>
+                    <div class="models" style="margin-top: 8px;">
+                        Context: <strong>${preset.default_context}</strong> |
+                        Engineering: <strong>${preset.default_engineering}</strong> |
+                        Review: <strong>${preset.default_review}</strong>
+                    </div>
+                    <div style="margin-top: 8px;">${modelBadges}</div>
+                `;
+            }
+        }
+
+        function runTask() {
+            const task = document.getElementById('taskInput').value.trim();
+            const preset = document.getElementById('presetSelect').value;
+            const repoPath = document.getElementById('repoPath').value.trim() || null;
+
+            if (!task) {
+                alert('Please enter a task description');
+                return;
+            }
+
+            if (preset === 'baseline') {
+                socket.emit('run_baseline', { task });
+            } else {
+                socket.emit('run_task', { task, preset, repo_path: repoPath });
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('taskInput').value = '';
+            clearLogs();
+            resetMetrics();
+            resetResults();
+        }
+
+        function clearLogs() {
+            logCount = 0;
+            document.getElementById('logCount').textContent = '0 events';
+            document.getElementById('logContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div>Run a task to see execution logs</div>
+                </div>
+            `;
+        }
+
+        function resetMetrics() {
+            document.getElementById('metricTime').textContent = '--';
+            document.getElementById('metricCost').textContent = '--';
+            document.getElementById('metricFeatures').textContent = '--';
+            const statusEl = document.getElementById('metricStatus');
+            statusEl.textContent = '--';
+            statusEl.className = 'metric-value';
+        }
+
+        function resetResults() {
+            document.getElementById('codeTab').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">💻</div>
+                    <div>Code output will appear here</div>
+                </div>
+            `;
+            document.getElementById('fullTab').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <div>Full response will appear here</div>
+                </div>
+            `;
+            document.getElementById('planTab').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div>Execution plan will appear here</div>
+                </div>
+            `;
+        }
+
+        function addLogEntry(data) {
+            const container = document.getElementById('logContainer');
+
+            // Remove empty state if present
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                container.innerHTML = '';
+            }
+
+            logCount++;
+            document.getElementById('logCount').textContent = logCount + ' events';
+
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+
+            let metricsHtml = '';
+            if (data.duration_ms) {
+                metricsHtml += `<span>${data.duration_ms}ms</span>`;
+            }
+            if (data.tokens) {
+                metricsHtml += `<span>${data.tokens} tokens</span>`;
+            }
+            if (data.cost) {
+                metricsHtml += `<span>$${data.cost.toFixed(4)}</span>`;
+            }
+
+            // Model badge if available
+            let modelBadge = '';
+            if (data.details && data.details.model) {
+                modelBadge = `<span class="model-badge">${data.details.model}</span>`;
+            }
+
+            // Output preview if available (for completed stages)
+            let outputPreview = '';
+            if (data.details && data.details.output_preview && data.status === 'completed') {
+                const preview = data.details.output_preview.substring(0, 300);
+                outputPreview = `<div class="output-preview">${escapeHtml(preview)}${data.details.output_preview.length > 300 ? '...' : ''}</div>`;
+            }
+
+            entry.innerHTML = `
+                <span class="log-time">${data.timestamp}</span>
+                <span class="log-stage ${data.stage}">${data.stage}</span>
+                <span class="log-message">
+                    ${modelBadge}
+                    ${data.message}
+                    <span class="log-status ${data.status}">${data.status}</span>
+                    ${outputPreview}
+                </span>
+                <span class="log-metrics">${metricsHtml}</span>
+            `;
+
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateResults(data) {
+            // Code tab
+            const codeTab = document.getElementById('codeTab');
+            if (data.code) {
+                codeTab.innerHTML = `
+                    <div class="code-block">
+                        <pre><code class="language-python">${escapeHtml(data.code)}</code></pre>
+                    </div>
+                `;
+                hljs.highlightAll();
+            } else {
+                codeTab.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div>No code block found in response</div>
+                    </div>
+                `;
+            }
+
+            // Full response tab
+            const fullTab = document.getElementById('fullTab');
+            if (data.final_answer) {
+                fullTab.innerHTML = `
+                    <div class="code-block">
+                        <pre><code>${escapeHtml(data.final_answer)}</code></pre>
+                    </div>
+                `;
+            }
+
+            // Plan tab
+            const planTab = document.getElementById('planTab');
+            if (data.plan) {
+                planTab.innerHTML = `
+                    <div style="padding: 16px;">
+                        <p><strong>Archetype:</strong> ${data.plan.archetype || 'N/A'}</p>
+                        <p style="margin-top: 12px;"><strong>Approach:</strong></p>
+                        <pre style="margin-top: 8px; white-space: pre-wrap;">${escapeHtml(data.plan.approach || 'N/A')}</pre>
+                    </div>
+                `;
+            } else {
+                planTab.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div>No plan data (baseline mode)</div>
+                    </div>
+                `;
+            }
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.result-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+
+            // Update tab content
+            document.querySelectorAll('.result-content').forEach(content => {
+                content.classList.toggle('active', content.id === tabName + 'Tab');
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initSocket();
+            updatePresetInfo();
+            document.getElementById('presetSelect').addEventListener('change', updatePresetInfo);
+
+            // Allow Ctrl+Enter to run
+            document.getElementById('taskInput').addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    runTask();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

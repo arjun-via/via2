@@ -6,7 +6,19 @@ from alo.agentic_loops.core.state import LoopState
 
 
 class ALOOrchestrator:
-    """Main orchestrator coordinating all agent loops.
+    """Main orchestrator for the ALO (Agentic Loops Orchestrator) system.
+
+    This is the core orchestrator for the ALO system, one of three agent systems
+    in the Via2 repository:
+    - **ALO**: Multi-model pipeline (Gemini → GPT → GLM → Kimi) - THIS SYSTEM
+    - **Opus Orchestrator**: Single-model Docker loop (Claude Opus 4.5)
+    - **Dynamic**: Adaptive model selection with learning
+
+    ALO coordinates four specialized agent loops:
+    1. Context Agent (Gemini): Analyzes full repository with massive context window
+    2. Reproduction Agent (GPT): Creates reproduction scripts using ReAct pattern
+    3. Engineering Agent (GLM): Writes code fixes, iterates based on repro results
+    4. Review Agent (Kimi K2): Reviews fixes for security/correctness
 
     Supports two review modes:
     1. Nested (default, backward compatible): Engineering handles review internally

@@ -1,0 +1,172 @@
+# =============================================================================
+# Opus Meta-Orchestrator: BEST-IN-CLASS Variant Configuration
+# =============================================================================
+#
+# Maximum quality with premium models
+# Uses Gemini for context, GPT-5.1/Sonnet for engineering, premium review
+#
+# Speed Profile: MODERATE (45-90 tok/s)
+# Cost Profile: HIGH
+# Best For: Complex architecture, critical systems, high-stakes tasks
+#
+# =============================================================================
+
+variant_name: "Opus-BestInClass"
+variant_description: "Maximum quality with premium models"
+
+# Opus Meta-Orchestrator (always Opus for planning)
+meta_orchestrator:
+  id: "anthropic/claude-opus-4"
+  base_url: "https://openrouter.ai/api/v1"
+  provider: "openrouter"
+  temperature: 0
+  pricing:
+    prompt: 5.00
+    completion: 25.00
+
+models:
+  # Context Agent: Gemini 2.5 Pro via OpenRouter (1M context window)
+  context:
+    id: "google/gemini-2.5-pro-preview"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "openrouter"
+    speed_tok_s: 90
+    context_window: 1000000
+    temperature: 0
+    pricing:
+      prompt: 2.00
+      completion: 12.00
+    capabilities:
+      - context
+      - reasoning
+      - large-context
+
+  # Engineering Agent: GPT-5.1 via OpenAI Native (ZDR compliant)
+  engineering:
+    id: "gpt-5.1"
+    base_url: "https://api.openai.com/v1"
+    provider: "openai"
+    speed_tok_s: 72
+    temperature: 0.2
+    pricing:
+      prompt: 1.25
+      completion: 10.00
+    capabilities:
+      - code
+      - reasoning
+      - premium
+
+  # Review Agent: Sonnet 4.5 via OpenRouter
+  # Different provider (Anthropic) vs Engineering (OpenAI) to avoid model collapse
+  review:
+    id: "anthropic/claude-sonnet-4"
+    base_url: "https://openrouter.ai/api/v1"
+    provider: "openrouter"
+    speed_tok_s: 77
+    temperature: 0
+    pricing:
+      prompt: 3.00
+      completion: 15.00
+    capabilities:
+      - code
+      - reasoning
+      - review
+      - premium
+
+  # Reproduction Agent: GPT-5.1 (consistent with engineering)
+  repro:
+    id: "gpt-5.1"
+    base_url: "https://api.openai.com/v1"
+    provider: "openai"
+    speed_tok_s: 72
+    temperature: 0
+    pricing:
+      prompt: 1.25
+      completion: 10.00
+    capabilities:
+      - code
+      - reasoning
+      - premium
+
+# Alternative review for deep analysis (used for concurrency, architecture)
+deep_review:
+  id: "moonshotai/kimi-k2-thinking"
+  base_url: "https://openrouter.ai/api/v1"
+  provider: "openrouter"
+  speed_tok_s: 31
+  temperature: 0
+  pricing:
+    prompt: 1.00
+    completion: 3.00
+  capabilities:
+    - reasoning
+    - review
+    - deep-analysis
+
+# Model upgrade path when retry needed
+upgrade_path:
+  "gpt-5.1": "anthropic/claude-sonnet-4"
+  "anthropic/claude-sonnet-4": "anthropic/claude-opus-4"
+
+# Allowed models for this variant
+allowed_models:
+  - "gemini-2.5-pro"
+  - "gpt-5.1"
+  - "sonnet-4.5"
+  - "opus-4.5"
+  - "kimi-k2-thinking"
+
+logging:
+  level: INFO
+
+# Archetype strategies for this variant
+archetype_strategies:
+  quick_fix:
+    context: "gemini-2.5-pro"
+    engineering: "gpt-5.1"
+    review: "sonnet-4.5"
+    max_retries: 2
+
+  feature_build:
+    context: "gemini-2.5-pro"
+    engineering: "gpt-5.1"
+    review: "sonnet-4.5"
+    max_retries: 3
+
+  architecture:
+    context: "gemini-2.5-pro"
+    engineering: "sonnet-4.5"    # Sonnet for architecture
+    review: "kimi-k2-thinking"  # Deep reasoning for review
+    max_retries: 3
+    # Opus takeover if fails
+
+  haystack:
+    context: "gemini-2.5-pro"   # 1M context essential
+    engineering: "gpt-5.1"
+    review: "sonnet-4.5"
+    max_retries: 3
+
+  concurrency:
+    context: "gemini-2.5-pro"
+    engineering: "sonnet-4.5"   # Anthropic models good at reasoning
+    review: "kimi-k2-thinking"  # Deep analysis of race conditions
+    max_retries: 4
+
+# Feature-based execution settings
+feature_execution:
+  max_retries_per_feature: 3
+  checkpoint_after_feature: true
+  clean_state_validation: true
+  opus_takeover_threshold: 2   # Opus takes over after 2 failed features
+
+# Provider diversification rules (avoid model collapse)
+provider_diversification:
+  enabled: true
+  rules:
+    - "Engineering provider (OpenAI) must differ from Review provider (Anthropic)"
+    - "Use deep_review (Kimi K2 Thinking) for architecture and concurrency"
+  good_combinations:
+    - engineering: "openai"
+      review: "openrouter"  # Anthropic via OpenRouter
+    - engineering: "anthropic"
+      review: "openrouter"  # Different model family

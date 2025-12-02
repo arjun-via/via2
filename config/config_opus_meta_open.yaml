@@ -1,0 +1,137 @@
+# =============================================================================
+# Opus Meta-Orchestrator: OPEN Variant Configuration
+# =============================================================================
+#
+# Uses fast open-source models via native APIs (Cerebras, Groq)
+# Opus 4.5 acts as strategic planner and validator
+#
+# Speed Profile: FASTEST (600-735 tok/s)
+# Cost Profile: LOWEST
+# Best For: Simple bugs, quick fixes, high-volume tasks
+#
+# =============================================================================
+
+variant_name: "Opus-Open"
+variant_description: "Fast open-source models via native APIs"
+
+# Opus Meta-Orchestrator (always Opus for planning)
+meta_orchestrator:
+  id: "anthropic/claude-opus-4"
+  base_url: "https://openrouter.ai/api/v1"
+  provider: "openrouter"
+  temperature: 0
+  pricing:
+    prompt: 5.00    # per 1M tokens
+    completion: 25.00
+
+models:
+  # Context Agent: GLM-4.6 via Cerebras (600 tok/s)
+  context:
+    id: "zai-glm-4.6"
+    base_url: "https://api.cerebras.ai/v1"
+    provider: "cerebras"
+    speed_tok_s: 600
+    temperature: 0
+    pricing:
+      prompt: 0.60
+      completion: 2.00
+    capabilities:
+      - code
+      - context
+      - fast
+
+  # Engineering Agent: Qwen3-235B via Cerebras (735 tok/s)
+  engineering:
+    id: "qwen-3-235b-a22b-instruct-2507"
+    base_url: "https://api.cerebras.ai/v1"
+    provider: "cerebras"
+    speed_tok_s: 735
+    temperature: 0.3
+    pricing:
+      prompt: 0.60
+      completion: 1.20
+    capabilities:
+      - code
+      - reasoning
+      - fast
+
+  # Review Agent: Kimi K2 via Groq (323 tok/s)
+  # Different provider to avoid model collapse
+  review:
+    id: "moonshotai/kimi-k2-instruct-0905"
+    base_url: "https://api.groq.com/openai/v1"
+    provider: "groq"
+    speed_tok_s: 323
+    temperature: 0
+    pricing:
+      prompt: 0.20
+      completion: 0.20
+    capabilities:
+      - code
+      - review
+      - agentic
+
+  # Reproduction Agent: Qwen3-235B (same as engineering for speed)
+  repro:
+    id: "qwen-3-235b-a22b-instruct-2507"
+    base_url: "https://api.cerebras.ai/v1"
+    provider: "cerebras"
+    speed_tok_s: 735
+    temperature: 0
+    pricing:
+      prompt: 0.60
+      completion: 1.20
+
+# Model upgrade path when retry needed
+upgrade_path:
+  "qwen-3-235b-a22b-instruct-2507": "gpt-5.1"
+  "zai-glm-4.6": "gpt-5.1"
+
+# Allowed models for this variant (Opus can select from these)
+allowed_models:
+  - "glm-4.6"
+  - "qwen3-235b"
+  - "kimi-k2"
+  - "kimi-k2-thinking"
+
+logging:
+  level: INFO
+
+# Archetype strategies for this variant
+archetype_strategies:
+  quick_fix:
+    context: "glm-4.6"
+    engineering: "qwen3-235b"
+    review: "kimi-k2"
+    max_retries: 2
+
+  feature_build:
+    context: "glm-4.6"
+    engineering: "qwen3-235b"
+    review: "kimi-k2"
+    max_retries: 3
+
+  architecture:
+    # Upgrade to meta_orchestrator (Opus) for complex tasks
+    context: "glm-4.6"
+    engineering: "opus_takeover"
+    review: "kimi-k2-thinking"
+    max_retries: 2
+
+  haystack:
+    context: "glm-4.6"  # Note: limited context window
+    engineering: "qwen3-235b"
+    review: "kimi-k2"
+    max_retries: 3
+
+  concurrency:
+    context: "glm-4.6"
+    engineering: "qwen3-235b"
+    review: "kimi-k2-thinking"
+    max_retries: 4
+
+# Feature-based execution settings
+feature_execution:
+  max_retries_per_feature: 3
+  checkpoint_after_feature: true
+  clean_state_validation: true
