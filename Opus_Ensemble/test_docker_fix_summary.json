@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-12-02T15:02:53.699002",
+  "total_tasks": 1,
+  "solved": 0,
+  "solve_rate": 0.0,
+  "total_cost": 0.0,
+  "total_time": 2.670401096343994,
+  "avg_time_per_task": 2.670401096343994,
+  "results": [
+    {
+      "instance_id": "django__django-15572",
+      "success": false,
+      "total_time": 2.670401096343994,
+      "patches_generated": 0,
+      "patches_passing": 0,
+      "error": "Failed to start Docker container for docker.io/swebench/sweb.eval.x86_64.django_django_15572:latest"
+    }
+  ]
+}

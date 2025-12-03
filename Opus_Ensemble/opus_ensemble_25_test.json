@@ -1,0 +1,785 @@
+{
+  "summary": {
+    "tasks": 25,
+    "total_patches": 125,
+    "total_time_seconds": 483.9585018157959,
+    "total_cost": 0.1580748
+  },
+  "results": [
+    {
+      "instance_id": "django__django-16667",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 10.775585889816284,
+      "cost": 0.0030654000000000002,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@\n-        try:\n-            date_value = datetime.date(int(y), int(m), int(d))\n-        except ValueError:\n-            return None\n+        try:\n+            date_value = datetime.date(int(y), int(m), int(d))\n+        except (ValueError,"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@\n-        try:\n-            date_value = datetime.date(int(y), int(m), int(d))\n-        except (ValueError, TypeError):\n-            return None\n+        try:\n+            date_value = datetime.date(int(y), int(m), int(d))\n+        except"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@\n-        try:\n-            return datetime.date(int(y), int(m), int(d))\n-        except (ValueError, TypeError):\n-            return None\n+        try:\n+            return datetime.date(int(y), int(m), int(d))\n+        except (ValueError"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@\n-        try:\n-            date_value = datetime.date(int(y), int(m), int(d))\n-        except ValueError:\n-            return None\n+        try:\n+            date_value = datetime.date(int(y), int(m), int(d))\n+        except (ValueError,"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@\n-        try:\n-            date_value = datetime.date(int(y), int(m), int(d))\n-        except ValueError:\n-            return None\n+        # Convert the submitted values to a date. Guard against both invalid\n+        # values (ValueErro"
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-13023",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 19.603152751922607,
+      "cost": 0.00473335,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n-        try:\n-            return decimal.Decimal(str(value))\n-        except decimal.InvalidOperation:\n-            raise exceptions.ValidationError(\n-                self.error_messages['invalid'],\n-            "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n-        try:\n-            return decimal.Decimal(value)\n-        except decimal.InvalidOperation:\n-            raise exceptions.ValidationError(\n-                self.error_messages['invalid'],\n-                c"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n class DecimalField(Field):\n@@\n     def to_python(self, value):\n         \"\"\"\n         Convert the input value into a Decimal instance.\n         \"\"\"\n-        if value is None:\n-            return value\n-        if "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n-        if isinstance(value, (float, int, str)):\n-            try:\n-                return decimal.Decimal(str(value))\n-            except decimal.InvalidOperation:\n-                raise exceptions.ValidationErr"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n-        try:\n-            return decimal.Decimal(value)\n-        except decimal.InvalidOperation:\n-            raise exceptions.ValidationError(\n-                self.error_messages['invalid'],\n-                c"
+        }
+      ]
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-15100",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 37.58008313179016,
+      "cost": 0.0064256,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/feature_extraction/text.py\n+++ b/sklearn/feature_extraction/text.py\n@@\n-    try:\n-        s = unicodedata.normalize('NFKD', s)\n-    except TypeError:  # pragma: no cover\n-        return s\n-    # If the string is already normalized, return it unchanged\n-    if s == unicodedata.normalize"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/feature_extraction/text.py\n+++ b/sklearn/feature_extraction/text.py\n@@\n-def strip_accents_unicode(s):\n-    \"\"\"Transform accentuated characters into their ASCII counterpart.\"\"\"\n-    try:\n-        s = unicodedata.normalize('NFKD', s)\n-    except TypeError:  # pragma: no cover\n-        re"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/feature_extraction/text.py\n+++ b/sklearn/feature_extraction/text.py\n@@\n-def strip_accents_unicode(s):\n-    \"\"\"Strip accents from a string using Unicode NFKD normalization.\"\"\"\n-    if isinstance(s, bytes):\n-        s = s.decode('utf-8')\n-    # Normalize to NFKD form\n-    normalized = un"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/feature_extraction/text.py\n+++ b/sklearn/feature_extraction/text.py\n@@\n-def strip_accents_unicode(s):\n-    \"\"\"Strip accents by transforming Unicode characters to their ASCII equivalents.\"\"\"\n-    try:\n-        s = unicodedata.normalize('NFKD', s)\n-    except TypeError:\n-        return s"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/feature_extraction/text.py\n+++ b/sklearn/feature_extraction/text.py\n@@\n-def strip_accents_unicode(s):\n-    \"\"\"Transform accentuated characters into ASCII equivalents.\"\"\"\n-    if isinstance(s, bytes):\n-        s = s.decode('utf-8')\n-    # If the string is already in NFKD form, the origi"
+        }
+      ]
+    },
+    {
+      "instance_id": "psf__requests-5414",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 39.659244775772095,
+      "cost": 0.0056191,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/requests/models.py\n+++ b/requests/models.py\n@@\n-        parsed = urllib3.util.url.parse_url(url)\n+        # urllib3's parse_url may raise UnicodeError for malformed hostnames\n+        # (e.g., an empty label like \"http://.example.com\").\n+        # Convert such errors into the expected InvalidU"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/requests/models.py\n+++ b/requests/models.py\n@@\n-        # If the URL is a string, we need to encode it.\n-        url = requote_uri(url)\n+        # If the URL is a string, we need to encode it.\n+        # Catch UnicodeError (e.g., from idna encoding of an invalid hostname)\n+        # and raise "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/requests/sessions.py\n+++ b/requests/sessions.py\n@@\n from .exceptions import (\n     InvalidURL,\n     RequestException,\n     TooManyRedirects,\n )\n@@\n         # Build the request URL.\n         prep = self.prepare_request(req)\n \n         # Send the request.\n-        resp = self.send(prep, **send_k"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/requests/models.py\n+++ b/requests/models.py\n@@\n-        # Parse the URL and ensure it is valid.\n-        parsed = urllib3.util.url.parse_url(url)\n+        # Parse the URL and ensure it is valid.\n+        # Convert any UnicodeError (e.g., from IDNA encoding of an empty label)\n+        # into th"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/requests/models.py\n+++ b/requests/models.py\n@@\n-from .exceptions import RequestException, InvalidURL, MissingSchema, InvalidSchema, InvalidHeader, ChunkedEncodingError, ContentDecodingError, StreamConsumedError, RetryError, UnrewindableBodyError, RequestsWarning\n+from .exceptions import Reques"
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-14434",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 12.01866602897644,
+      "cost": 0.008282,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@\n-        columns = [self.column_sql(field) for field in fields]\n-        references_column = any(isinstance(col, Table) for col in columns)\n+        # Use the actual column name strings for unique constraints.\n+      "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/sql/compiler.py\n+++ b/django/db/models/sql/compiler.py\n@@\n-        # Build the list of columns that make up the unique constraint.\n-        # NOTE: ``Columns`` expects a sequence of column *names* (strings).\n-        # Previously, ``self.table`` (a ``Table`` instance) was inco"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@\n-    def _create_unique_sql(self, model, fields, name):\n-        \"\"\"\n-        Return the SQL statement to create a unique constraint on the given\n-        fields of the given model.\n-        \"\"\"\n-        columns = [fi"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@\n-    def _create_unique_sql(self, model, fields, name):\n-        # NOTE: ``Columns`` expects an iterable of column *names* (strings).  The\n-        # previous implementation mistakenly passed a ``Table`` instance,\n-  "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@\n-    def _create_unique_sql(self, model, fields, name):\n-        columns = [model._meta.get_field(field).column for field in fields]\n-        tablespace = self.connection.settings_dict.get('TABLESPACE')\n-        sql ="
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-13195",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 7.573843240737915,
+      "cost": 0.0056028,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/http/__init__.py\n+++ b/django/http/__init__.py\n@@\n-    def delete_cookie(self, key, path='/', domain=None):\n-        \"\"\"\n-        Delete a cookie.\n-\n-        Note that the cookie will be deleted in the browser only if the\n-        cookie's path and domain match the path and domain used "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/http/__init__.py\n+++ b/django/http/__init__.py\n@@\n-    def delete_cookie(self, key, path='/', domain=None):\n-        \"\"\"\n-        Delete a cookie.\n-\n-        Note that the cookie will be removed from the client only if the\n-        client receives the response. If the client does not re"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/http/__init__.py\n+++ b/django/http/__init__.py\n@@\n-    def delete_cookie(self, key, path='/', domain=None):\n-        self.set_cookie(\n-            key,\n-            max_age=0,\n-            expires='Thu, 01 Jan 1970 00:00:00 GMT',\n-            path=path,\n-            domain=domain,\n-    "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/http/__init__.py\n+++ b/django/http/__init__.py\n@@\n-    def delete_cookie(self, key, path='/', domain=None):\n-        \"\"\"\n-        Delete a cookie.\n-\n-        Note that the cookie will be deleted only if the path and domain\n-        match what was used to set the cookie.\n-        \"\"\"\n-  "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/http/__init__.py\n+++ b/django/http/__init__.py\n@@\n-    def delete_cookie(self, key, path='/', domain=None):\n-        \"\"\"\n-        Delete a cookie.\n-\n-        Note that the cookie will be deleted only if the path and domain\n-        match what was given originally.\n-        \"\"\"\n-        "
+        }
+      ]
+    },
+    {
+      "instance_id": "sympy__sympy-16450",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 14.516581296920776,
+      "cost": 0.0057503499999999996,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/utilities/misc.py\n+++ b/sympy/utilities/misc.py\n@@\n-        # Create a positive symbol with the same name\n-        new = Symbol(str(sym), positive=True)\n+        # Create a positive symbol while preserving original true assumptions\n+        # (e.g., finite, integer, rational, prime, even"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/assumptions/ask.py\n+++ b/sympy/assumptions/ask.py\n@@\n-        new = Symbol('_posify_' + name, positive=True, real=True, hermitian=True,\n-                     imaginary=False, negative=False, nonnegative=True,\n-                     nonzero=True, zero=False, complex=True,\n-                "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/core/exprtools.py\n+++ b/sympy/core/exprtools.py\n@@\n-        if arg.is_Symbol:\n-            if arg.is_positive:\n-                return arg\n-            else:\n-                # create a new positive Symbol with the same name\n-                new = Symbol(arg.name, positive=True, real=Tru"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/core/exprtools.py\n+++ b/sympy/core/exprtools.py\n@@\n-    def _posify(expr):\n-        if expr.is_Symbol:\n-            if expr.is_positive:\n-                return expr\n-            new = Symbol(expr.name, positive=True)\n-            repl[new] = expr\n-            return new\n-        else:\n-"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/simplify/simplify.py\n+++ b/sympy/simplify/simplify.py\n@@\n-        # create a new positive Symbol with the same name\n-        new = Symbol(s.name, positive=True, real=True)\n+        # create a new positive Symbol with the same name, preserving all\n+        # existing assumptions (includin"
+        }
+      ]
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14894",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 13.872874975204468,
+      "cost": 0.0054238,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/svm/base.py\n+++ b/sklearn/svm/base.py\n@@\n-        dual_coef = np.empty((n_class, n_support_vectors))\n-        # ... some code that fills dual_coef ...\n-        # Normalize dual coefficients\n-        self.dual_coef_ = sp.csr_matrix(\n-            dual_coef / (dual_coef_indices.size / n_c"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/svm/base.py\n+++ b/sklearn/svm/base.py\n@@\n-        n_sv = dual_coef_indices.size / n_class\n+        # Guard against division by zero when there are no support vectors.\n+        # In such cases dual_coef_indices.size will be 0 and n_class may be 0\n+        # (e.g., regression with empty "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/svm/base.py\n+++ b/sklearn/svm/base.py\n@@\n-        n_class = self.n_classes_\n+        # ``n_classes_`` is only defined for classification problems.\n+        # For regression (SVR, NuSVR) it does not exist, and the number of\n+        # \"classes\" should be treated as 2 (the +1 and -1 side"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/svm/base.py\n+++ b/sklearn/svm/base.py\n@@\n-        self.dual_coef_ = sp.csr_matrix(\n-            (dual_coef.ravel(),\n-             dual_coef_indices,\n-             np.arange(0, dual_coef_indices.size + 1,\n-                       dual_coef_indices.size / n_class)),\n-            shape=(n_"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/svm/base.py\n+++ b/sklearn/svm/base.py\n@@\n-        self.dual_coef_ = sp.csr_matrix(\n-            (dual_coef_data, dual_coef_indices, dual_coef_indptr),\n-            shape=(n_class - 1, dual_coef_indices.size / n_class))\n+        # Handle the case where there are no support vectors.\n+   "
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-15916",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 29.88226008415222,
+      "cost": 0.0064057,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n-    attrs = {'Meta': type('Meta', (object,), {\n-        'model': model,\n-        'fields': fields,\n-        'exclude': exclude,\n-        'widgets': widgets,\n-        'localized_fields': localized_fields,\n-        'labels': labels,\n-      "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n-    # Set the formfield_callback on the class.\n-    attrs['formfield_callback'] = formfield_callback\n+    # Set the formfield_callback on the class only if an explicit callback\n+    # was supplied to ``modelform_factory``.  When ``formfie"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n-    # Set the formfield_callback on the new class.  This overwrites any\n-    # callback that may have been defined on the base form (including via\n-    # its Meta class), which is undesirable.\n-    if formfield_callback is not None:\n-    "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n-    # If a formfield_callback is not supplied, use the one defined on the form\n-    if formfield_callback is None:\n-        formfield_callback = getattr(form, 'formfield_callback', None)\n+    # If a formfield_callback is not supplied, use"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n-def modelform_factory(model, form=ModelForm, fields=None, exclude=None,\n-                      formfield_callback=None, widgets=None, localized_fields=None,\n-                      labels=None, help_texts=None, error_messages=None,\n-      "
+        }
+      ]
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11445",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 67.7004930973053,
+      "cost": 0.00875805,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/environment.py\n+++ b/sphinx/environment.py\n@@\n         # read the source file and parse it into a docutils document\n         doc = self._read_doc(docname, source, self.app.builder)\n \n+        # NOTE: When ``rst_prolog`` contains substitution definitions,\n+        # the first heading (es"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/environment.py\n+++ b/sphinx/environment.py\n@@\n-        if self.config.rst_prolog:\n-            source = self.config.rst_prolog + source\n+        # prepend rst_prolog, ensuring it is separated from the document\n+        # by a blank line.  Without the blank line a substitution definition"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/environment.py\n+++ b/sphinx/environment.py\n@@\n-        # store the title of the document (if any)\n-        self.titles[docname] = doc.title\n+        # store the title of the document (if any)\n+        # NOTE: When ``rst_prolog`` is used, docutils may fail to set ``doc.title``\n+        #"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/application.py\n+++ b/sphinx/application.py\n@@\n-        if self.config.rst_prolog:\n-            settings['rst_prolog'] = self.config.rst_prolog\n+        # Ensure that rst_prolog ends with a blank line so that the first\n+        # title in a document is parsed correctly even when it conta"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/environment.py\n+++ b/sphinx/environment.py\n@@\n-        # store the title of the document\n-        title_node = doctree.next_node(nodes.title)\n-        if title_node is not None:\n-            self.titles[docname] = title_node.astext()\n-        else:\n-            self.titles[docname] = ''"
+        }
+      ]
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14141",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 14.15028691291809,
+      "cost": 0.0028815,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/_show_versions.py\n+++ b/sklearn/_show_versions.py\n@@\n import sys\n import platform\n import numpy as np\n import scipy\n+import joblib\n@@\n def _get_deps_info():\n     \"\"\"Return a dict of module name -> version.\"\"\"\n-    deps = {\n-        \"numpy\": np.__version__,\n-        \"scipy\": scipy.__ver"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/_show_versions.py\n+++ b/sklearn/_show_versions.py\n@@\n import sys\n import platform\n import importlib\n import warnings\n+import joblib\n@@\n def _get_deps_info():\n@@\n     deps = [\n         (\"numpy\", np.__version__),\n         (\"scipy\", scipy.__version__),\n         (\"Cython\", Cython.__version"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/__init__.py\n+++ b/sklearn/__init__.py\n@@\n import sys\n import numpy as np\n import scipy as sp\n+import joblib\n import sklearn\n@@\n     sys_info = {\n         \"python\": sys.version.split()[0],\n         \"numpy\": np.__version__,\n         \"scipy\": sp.__version__,\n+        \"joblib\": joblib.__ve"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/__init__.py\n+++ b/sklearn/__init__.py\n@@\n import sys\n import platform\n import numpy as np\n import scipy\n+import joblib\n@@\n     deps = {\n         \"numpy\": np.__version__,\n         \"scipy\": scipy.__version__,\n-        \"sklearn\": __version__,\n+        \"sklearn\": __version__,\n+        \"job"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/__init__.py\n+++ b/sklearn/__init__.py\n@@\n-    deps = [\"numpy\", \"scipy\", \"pandas\", \"matplotlib\"]\n+    # Added 'joblib' to the list of dependencies displayed by show_versions\n+    deps = [\"numpy\", \"scipy\", \"joblib\", \"pandas\", \"matplotlib\"]"
+        }
+      ]
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-11510",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 20.68282175064087,
+      "cost": 0.0116089,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/directives/other.py\n+++ b/sphinx/directives/other.py\n@@\n         def run(self):\n@@\n         env = self.state.document.settings.env\n         rel_fn = directives.path(self.arguments[0])\n         fn = env.relfn2path(rel_fn, self.state.document.current_source)\n-        source = None\n-      "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/directives/other.py\n+++ b/sphinx/directives/other.py\n@@\n class Include(Directive):\n@@\n     def run(self):\n         env = self.state.document.settings.env\n         rel_filename, filename = env.relfn2path(self.arguments[0])\n@@\n-        # read the file\n-        try:\n-            with open("
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/my-extension.py\n+++ b/my-extension.py\n@@\n def subst_vars_replace(app: Sphinx, docname, source):\n     result = source[0]\n     result = result.replace(\"&REPLACE_ME;\", \"REPLACED\")\n-    source[0] = result\n+    source[0] = result\n+    # Ensure the modified source is used for include directives.\n+  "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/directives/other.py\n+++ b/sphinx/directives/other.py\n@@\n class Include(Directive):\n@@\n     def run(self):\n         env = self.state.document.settings.env\n         rel_filename, filename = env.relfn2path(self.arguments[0])\n@@\n-        # read the file\n-        try:\n-            with open("
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/directives/other.py\n+++ b/sphinx/directives/other.py\n@@\n-        env = self.state.document.settings.env\n-        rel_fn, fn = env.relfn2path(self.arguments[0])\n-        # the encoding of the text is taken from the source file\n-        # (or from the config if not given)\n-        encodin"
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-13933",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 8.312734842300415,
+      "cost": 0.005004349999999999,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n class ModelChoiceField(ChoiceField):\n@@\n-    default_error_messages = {\n-        'invalid_choice': _('Select a valid choice. That choice is not one of'\n-                            ' the available choices.'),\n-    }\n+    # Include the inv"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n class ModelChoiceField(ChoiceField):\n \t\"\"\"A ChoiceField whose choices are a model QuerySet.\"\"\"\n \t# This class is a subclass of ChoiceField for purity, but it doesn't\n \t# actually use any of ChoiceField's implementation.\n \tdefault_error_me"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n class ModelChoiceField(ChoiceField):\n     \"\"\"A ChoiceField whose choices are a model QuerySet.\"\"\"\n     # This class is a subclass of ChoiceField for purity, but it doesn't\n     # actually use any of ChoiceField's implementation.\n-    defa"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n class ModelChoiceField(ChoiceField):\n     \"\"\"A ChoiceField whose choices are a model QuerySet.\"\"\"\n     # This class is a subclass of ChoiceField for purity, but it doesn't\n     # actually use any of ChoiceField's implementation.\n-    defa"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@\n class ModelChoiceField(ChoiceField):\n     \"\"\"A ChoiceField whose choices are a model QuerySet.\"\"\"\n     # This class is a subclass of ChoiceField for purity, but it doesn't\n     # actually use any of ChoiceField's implementation.\n     defa"
+        }
+      ]
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24637",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 9.259034872055054,
+      "cost": 0.00543185,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/offsetbox.py\n+++ b/lib/matplotlib/offsetbox.py\n@@\n     def draw(self, renderer):\n         \"\"\"\n         Draw the annotation box.\n         \"\"\"\n         if not self.get_visible():\n             return\n+        # Propagate the gid of the AnnotationBbox to the underlying image\n+      "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/offsetbox.py\n+++ b/lib/matplotlib/offsetbox.py\n@@\n     def draw(self, renderer):\n         \"\"\"\n         Draw the annotation box.\n         \"\"\"\n         if not self.get_visible():\n             return\n-\n-        # Transform the box to the appropriate location.\n-        self._box_tra"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/offsetbox.py\n+++ b/lib/matplotlib/offsetbox.py\n@@\n class AnnotationBbox(Artist):\n@@\n     def __init__(self, offsetbox, xy, xybox=None, xycoords='data',\n                  boxcoords=\"offset points\", box_alignment=(0., 0.5),\n                  arrowprops=None, frameon=True, pad=0.4,"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/offsetbox.py\n+++ b/lib/matplotlib/offsetbox.py\n@@\n class AnnotationBbox(Annotation):\n@@\n     def draw(self, renderer):\n         \"\"\"\n         Draw the annotation box.\n         \"\"\"\n         # Transform the box to the appropriate location.\n         self._update_bbox_position()\n-   "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/offsetbox.py\n+++ b/lib/matplotlib/offsetbox.py\n@@\n class AnnotationBbox(Annotation):\n@@\n     def __init__(self, offsetbox, xy, xybox=None, xycoords='data',\n                  boxcoords=\"offset points\", box_alignment=None,\n                  arrowprops=None, frameon=True, pad=0.4, "
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-13741",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 7.518318176269531,
+      "cost": 0.0044665,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/contrib/auth/forms.py\n+++ b/django/contrib/auth/forms.py\n@@\n class ReadOnlyPasswordHashField(forms.Field):\n     widget = ReadOnlyPasswordHashWidget\n@@\n     def __init__(self, *args, **kwargs):\n-        # No need for a label, help_text etc.\n-        kwargs.setdefault('required', False)\n+"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/contrib/auth/forms.py\n+++ b/django/contrib/auth/forms.py\n@@\n class ReadOnlyPasswordHashField(forms.Field):\n     \"\"\"\n     A read-only password hash field.\n     \"\"\"\n     widget = ReadOnlyPasswordHashWidget\n \n     def __init__(self, *args, **kwargs):\n-        kwargs.setdefault('required', "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/contrib/auth/forms.py\n+++ b/django/contrib/auth/forms.py\n@@\n class ReadOnlyPasswordHashField(forms.Field):\n     \"\"\"\n     A read-only field that displays a hashed password.\n     \"\"\"\n     widget = ReadOnlyPasswordHashWidget\n+\n+    # Ensure the field is disabled by default to prevent accid"
+        },
+        {
+          "strategy": "minimal",
+          "code": "```diff\n--- a/django/contrib/auth/forms.py\n+++ b/django/contrib/auth/forms.py\n@@\n class ReadOnlyPasswordHashField(forms.Field):\n@@\n-    def __init__(self, *args, **kwargs):\n-        kwargs.setdefault('required', False)\n-        super().__init__(*args, **kwargs)\n+    def __init__(self, *args, **kwarg"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/contrib/auth/forms.py\n+++ b/django/contrib/auth/forms.py\n@@\n class ReadOnlyPasswordHashField(forms.Field):\n     \"\"\"\n     A read-only password hash field.\n     \"\"\"\n-    widget = ReadOnlyPasswordHashWidget\n+    widget = ReadOnlyPasswordHashWidget\n@@\n-    def __init__(self, *args, **kwargs"
+        }
+      ]
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6528",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 42.18766498565674,
+      "cost": 0.01170355,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/pylint/utils.py\n+++ b/pylint/utils.py\n@@\n-def _list_files(paths, extensions, ignore, ignore_patterns, ignore_paths):\n-    \"\"\"Return a list of files matching the given extensions from the supplied\n-    paths, applying ignore rules.\"\"\"\n-    files = []\n-    for path in paths:\n-        if os.path."
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/pylint/lint/run.py\n+++ b/pylint/lint/run.py\n@@\n-    # Get the list of files to lint.\n-    if args.recursive:\n-        files = utils.get_files_from_dir(args.path)\n-    else:\n-        files = utils.get_files(args.path)\n+    # Get the list of files to lint, applying ignore settings even in recurs"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/pylint/lint.py\n+++ b/pylint/lint.py\n@@\n-    def _ignore_match(self, path):\n-        \"\"\"Check if a path matches any ignore patterns.\"\"\"\n-        basename = os.path.basename(path)\n-        if basename in self.config.ignore:\n-            return True\n-        for pattern in self.config.ignore_patt"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/pylint/lint/utils.py\n+++ b/pylint/lint/utils.py\n@@\n import os\n+import re\n@@\n-def _list_files(paths, extensions=('.py',), ignore=None, ignore_patterns=None,\n-                ignore_paths=None):\n-    \"\"\"Yield python files found in *paths*.\"\"\"\n-    for path in paths:\n-        if os.path.isdir(pat"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/pylint/utils.py\n+++ b/pylint/utils.py\n@@\n import os\n+import re\n@@\n-def list_files(paths, extensions=('.py',), ignore=None, ignore_patterns=None, ignore_paths=None):\n+def list_files(paths, extensions=('.py',), ignore=None, ignore_patterns=None, ignore_paths=None):\n@@\n-        for root, _, files"
+        }
+      ]
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9320",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 12.8781099319458,
+      "cost": 0.00504995,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/quickstart.py\n+++ b/sphinx/quickstart.py\n@@\n-        if os.path.isfile(os.path.join(root_path, 'conf.py')):\n-            # existing conf.py\n-            root_path = input('Please enter a new root path name (or just Enter to exit): ')\n-            if not root_path:\n-                print"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/quickstart.py\n+++ b/sphinx/quickstart.py\n@@\n-    while True:\n-        root = input('Please enter a new root path name (or just Enter to exit): ')\n-        if os.path.isdir(root):\n-            break\n-        else:\n-            print('Please enter a valid path name')\n+    while True:\n+   "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/quickstart.py\n+++ b/sphinx/quickstart.py\n@@\n-def path_validator(path):\n-    if not path:\n-        raise ValueError('Please enter a valid path name')\n-    if os.path.isdir(path) and os.listdir(path):\n-        raise ValueError('The directory %s already exists and is not empty.' % path)\n- "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/quickstart.py\n+++ b/sphinx/quickstart.py\n@@\n-    root = input(_('Please enter a new root path name (or just Enter to exit) '))\n-    if not root:\n-        print(_('Please enter a valid path name'))\n-        continue\n+    root = input(_('Please enter a new root path name (or just Enter to"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sphinx/quickstart.py\n+++ b/sphinx/quickstart.py\n@@\n-def path_validator(path):\n-    \"\"\"Validate a path entered by the user.\"\"\"\n-    if not path:\n-        return _(\"Please enter a valid path name\")\n-    if os.path.isdir(path):\n-        return True\n-    else:\n-        return _(\"Please enter a val"
+        }
+      ]
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-25931",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 11.577029943466187,
+      "cost": 0.0065712,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/ensemble/_iforest.py\n+++ b/sklearn/ensemble/_iforest.py\n@@\n class IsolationForest(BaseBagging, OutlierMixin):\n@@\n-    def fit(self, X, y=None, sample_weight=None):\n-        # Fit the isolation forest model\n-        super().fit(X, y, sample_weight=sample_weight)\n-\n-        # Compute the"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/ensemble/_iforest.py\n+++ b/sklearn/ensemble/_iforest.py\n@@\n-        if self.contamination != \"auto\":\n-            # compute the offset which corresponds to the contamination\n-            self.offset_ = np.percentile(\n-                self.decision_function(X), 100.0 * self.contaminatio"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/ensemble/_iforest.py\n+++ b/sklearn/ensemble/_iforest.py\n@@\n     def fit(self, X, y=None, sample_weight=None):\n         \"\"\"Fit the IsolationForest model.\n@@\n-        X = self._validate_data(\n-            X,\n-            reset=True,\n-            accept_sparse=False,\n-            dtype=DT"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/ensemble/_iforest.py\n+++ b/sklearn/ensemble/_iforest.py\n@@\n-        if self.contamination != \"auto\":\n-            self.offset_ = np.percentile(\n-                self.decision_function(X), 100 * self.contamination\n-            )\n+        if self.contamination != \"auto\":\n+            # U"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sklearn/ensemble/_iforest.py\n+++ b/sklearn/ensemble/_iforest.py\n@@\n-        if self.contamination != \"auto\":\n-            # compute offset_ based on the contamination level\n-            self.offset_ = np.percentile(\n-                self.decision_function(X), 100.0 * self.contamination\n-      "
+        }
+      ]
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-20488",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 20.229437828063965,
+      "cost": 0.00657665,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/colors.py\n+++ b/lib/matplotlib/colors.py\n@@\n     def __call__(self, value, clip=None):\n         value, is_scalar = self.process_value(value)\n         self.autoscale_None(value)\n         if self.vmin > self.vmax:\n             raise ValueError(\"vmin must be less or equal to vmax\")"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/colors.py\n+++ b/lib/matplotlib/colors.py\n@@\n         t_value = self._trf.transform(value).reshape(np.shape(value))\n         t_vmin, t_vmax = self._trf.transform([self.vmin, self.vmax])\n-        if not np.isfinite([t_vmin, t_vmax]).all():\n-            raise ValueError(\"Invalid vm"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/colors.py\n+++ b/lib/matplotlib/colors.py\n@@\n-        t_vmin, t_vmax = self._trf.transform([self.vmin, self.vmax])\n-        if not np.isfinite([t_vmin, t_vmax]).all():\n-            raise ValueError(\"Invalid vmin or vmax\")\n+        # Guard against non\u2011positive vmin/vmax which caus"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/colors.py\n+++ b/lib/matplotlib/colors.py\n@@\n-        if not np.isfinite([t_vmin, t_vmax]).all():\n-            raise ValueError(\"Invalid vmin or vmax\")\n+        # If the transformed vmin/vmax are not finite (e.g. due to non\u2011positive\n+        # values in a LogNorm), the original i"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/colors.py\n+++ b/lib/matplotlib/colors.py\n@@\n     def __call__(self, value, clip=None):\n         value, is_scalar = self.process_value(value)\n         self.autoscale_None(value)\n+        # Ensure vmin is positive for LogNorm to avoid invalid transforms.\n+        # If vmin is zero"
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-15161",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 11.331512689590454,
+      "cost": 0.0047657,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@\n class Expression:\n     def deconstruct(self):\n-        path = \"%s.%s\" % (self.__class__.__module__, self.__class__.__name__)\n-        return (path, [], {})\n+        # Simplify the import path for expressions that live in"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@\n-        path = \"django.db.models.expressions.F\"\n+        path = \"django.db.models.F\"\n@@\n-        path = \"django.db.models.expressions.Value\"\n+        path = \"django.db.models.Value\"\n@@\n-        path = \"django.db.models.e"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@\n class Expression:\n@@\n-    def deconstruct(self):\n-        \"\"\"\n-        Return a 3-tuple of (path, args, kwargs) for recreating the expression.\n-        \"\"\"\n-        path = \"%s.%s\" % (self.__class__.__module__, self.__cla"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@\n class Expression:\n@@\n-    def deconstruct(self):\n-        \"\"\"\n-        Return a 3-tuple of (path, args, kwargs) that can be used to reconstruct\n-        the expression.\n-        \"\"\"\n-        path = \"%s.%s\" % (self.__clas"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/expressions.py\n+++ b/django/db/models/expressions.py\n@@\n class BaseExpression:\n@@\n     def deconstruct(self):\n-        path = \"%s.%s\" % (self.__class__.__module__, self.__class__.__name__)\n+        # Use a simplified import path for expressions that are re-exported\n+        # "
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-15973",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 9.501075029373169,
+      "cost": 0.0076701,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/migrations/state.py\n+++ b/django/db/migrations/state.py\n@@\n def model_dependencies(model):\n     \"\"\"\n     Return a set of (app_label, model_name) tuples representing the models\n     that ``model`` depends on.\n     \"\"\"\n     deps = set()\n@@\n-    for field in model._meta.get_fields():\n- "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@\n-        for field in model._meta.local_many_to_many:\n-            if field.remote_field.through._meta.auto_created:\n-                # Create the intermediate table for the many-to-many relationship.\n-               "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@\n from django.db import models\n from django.db.backends.base.schema import BaseDatabaseSchemaEditor\n from django.db.models import (\n     AutoField, BigAutoField, BinaryField, BooleanField, CharField,\n     DateField, Da"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/backends/base/schema.py\n+++ b/django/db/backends/base/schema.py\n@@\n from django.db import models\n from django.db.models import (\n     AutoField, BigAutoField, BinaryField, BooleanField, CharField,\n@@\n from django.db.models.fields.related import (\n     ForeignObjectRel, ForeignObject,"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/core/fonte/models.py\n+++ b/core/fonte/models.py\n@@\n-from django.db.models import Model, TextField, DateField, ManyToManyField, CASCADE\n+from django.db.models import Model, TextField, DateField, ManyToManyField, CASCADE\n+# Import the explicit through\u2011model class instead of referencing it by a s"
+        }
+      ]
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24177",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 15.031171083450317,
+      "cost": 0.00740185,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@\n         if histtype == 'step':\n-            # Plot a line that follows the bin edges.\n-            # The line is drawn using the step drawstyle.\n-            # The y-values are the histogram values, with a zero added at the\n- "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@\n-        if histtype == 'step':\n-            # step histogram\n-            line = self.plot(bins, np.r_[n, n[-1]],\n-                             drawstyle='steps-post', **kwargs)[0]\n-            patches = [line]\n-            # "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@\n     def hist(self, x, bins=None, range=None, density=False, weights=None,\n              cumulative=False, bottom=None, histtype='bar', align='mid',\n              orientation='vertical', rwidth=None, log=False, color=None,\n    "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@\n-        if not self._hold:\n-            self.autoscale_view()\n+        if not self._hold:\n+            # Ensure that step histograms (especially with density=True) are\n+            # considered when autoscaling the view. Some "
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/matplotlib/axes/_axes.py\n+++ b/matplotlib/axes/_axes.py\n@@\n-        if density:\n-            # normalize the histogram\n-            y = y / (y.sum() * np.diff(bins))\n+        if density:\n+            # normalize the histogram\n+            y = y / (y.sum() * np.diff(bins))\n+            # For st"
+        }
+      ]
+    },
+    {
+      "instance_id": "pydata__xarray-6938",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 18.267457962036133,
+      "cost": 0.00951375,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@\n-    def swap_dims(self, dims: Mapping[str, str]) -> \"Dataset\":\n-        \"\"\"Return a new dataset with dimensions swapped according to ``dims``.\n-\n-        Parameters\n-        ----------\n-        dims : Mapping[str, str]\n-            Mappin"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@\n-    def swap_dims(self, dims: Mapping[str, str]) -> \"Dataset\":\n-        \"\"\"Swap dimensions of the dataset.\n-\n-        Parameters\n-        ----------\n-        dims : Mapping[str, str]\n-            Mapping from existing dimension name to ne"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@\n-    def swap_dims(self, dims: Mapping[str, str]) -> \"Dataset\":\n-        \"\"\"Swap dimension coordinates with dimensions.\n-\n-        Parameters\n-        ----------\n-        dims : Mapping[str, str]\n-            Mapping from existing dimensio"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@\n-    def swap_dims(self, dims):\n-        \"\"\"Swap dimension names with new names.\"\"\"\n-        dims = utils.canonicalize_dims(dims)\n-\n-        # rename dimensions in all variables\n-        new_vars = {}\n-        for name, var in self.variabl"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@\n-    def swap_dims(self, dims):\n-        dims = utils.ensure_dict(dims)\n-        new_vars = {}\n-        for name, var in self.variables.items():\n-            if name in dims:\n-                new_dim = dims[name]\n-                new_vars["
+        }
+      ]
+    },
+    {
+      "instance_id": "sympy__sympy-23950",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 12.090991020202637,
+      "cost": 0.00316345,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/sets/contains.py\n+++ b/sympy/sets/contains.py\n@@\n     def as_set(self):\n-        return self\n+        # ``Contains`` represents a Boolean predicate ``x \u2208 S``.\n+        # When converting to a set, the appropriate set is the\n+        # second argument (the set being tested for membership)."
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/sets/contains.py\n+++ b/sympy/sets/contains.py\n@@\n     def as_set(self):\n-        return self\n+        # ``Contains(expr, set)`` represents the logical statement ``expr \u2208 set``.\n+        # ``as_set`` should return the underlying set, not the ``Contains`` object\n+        # itself. Returnin"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/sets/contains.py\n+++ b/sympy/sets/contains.py\n@@\n     def as_set(self):\n-        return self\n+        # ``Contains`` represents a relational statement ``expr in set``.\n+        # When converting to a set (e.g., for Piecewise condition handling),\n+        # we should return the underlying"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/sets/contains.py\n+++ b/sympy/sets/contains.py\n@@\n class Contains(Boolean):\n@@\n     def as_set(self):\n-        return self\n+        # ``Contains(x, S)`` denotes the predicate ``x \u2208 S``.\n+        # The set of points satisfying this predicate is the set ``S`` itself.\n+        # Returning ``"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/sympy/sets/contains.py\n+++ b/sympy/sets/contains.py\n@@\n-    def as_set(self):\n-        return self\n+    def as_set(self):\n+        \"\"\"\n+        Return the set argument of the Contains expression.\n+        This allows Contains to be used where a set is expected,\n+        e.g., in Piecewise cond"
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-13401",
+      "num_patches": 5,
+      "strategies": {
+        "minimal": 5
+      },
+      "time": 17.75752902030945,
+      "cost": 0.00619935,
+      "patches": [
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n class Field:\n@@\n-    def __eq__(self, other):\n-        if not isinstance(other, Field):\n-            return NotImplemented\n-        return self.creation_counter == other.creation_counter\n-\n-    def __hash__(self)"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n class Field:\n@@\n-    def __eq__(self, other):\n-        return isinstance(other, Field) and self.creation_counter == other.creation_counter\n-\n-    def __hash__(self):\n-        return hash(self.creation_counter)\n-\n"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n class Field:\n@@\n-    def __eq__(self, other):\n-        if not isinstance(other, Field):\n-            return NotImplemented\n-        return self.creation_counter == other.creation_counter\n-\n-    def __hash__(self)"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n class Field:\n@@\n-    def __eq__(self, other):\n-        return isinstance(other, Field) and self.creation_counter == other.creation_counter\n-\n-    def __hash__(self):\n-        return hash(self.creation_counter)\n-\n"
+        },
+        {
+          "strategy": "minimal",
+          "code": "--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@\n-    def __eq__(self, other):\n-        return isinstance(other, Field) and self.creation_counter == other.creation_counter\n-\n-    def __hash__(self):\n-        return hash(self.creation_counter)\n-\n-    def __lt__(s"
+        }
+      ]
+    }
+  ]
+}

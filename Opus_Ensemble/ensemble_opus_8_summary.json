@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-12-02T14:21:18.534226",
+  "total_tasks": 8,
+  "solved": 0,
+  "solve_rate": 0.0,
+  "total_cost": 15.038784999999999,
+  "total_time": 795.8241691589355,
+  "avg_time_per_task": 99.47802114486694,
+  "results": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "success": false,
+      "total_time": 90.2306489944458,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    },
+    {
+      "instance_id": "astropy__astropy-13033",
+      "success": false,
+      "total_time": 75.69323205947876,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    },
+    {
+      "instance_id": "astropy__astropy-13236",
+      "success": false,
+      "total_time": 57.24092984199524,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    },
+    {
+      "instance_id": "astropy__astropy-13398",
+      "success": false,
+      "total_time": 147.30620217323303,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    },
+    {
+      "instance_id": "astropy__astropy-13453",
+      "success": false,
+      "total_time": 60.98688793182373,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    },
+    {
+      "instance_id": "astropy__astropy-13579",
+      "success": false,
+      "total_time": 187.12255311012268,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    },
+    {
+      "instance_id": "astropy__astropy-13977",
+      "success": false,
+      "total_time": 90.25028085708618,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    },
+    {
+      "instance_id": "astropy__astropy-14096",
+      "success": false,
+      "total_time": 86.99343419075012,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    }
+  ]
+}

@@ -1,0 +1,318 @@
+# =============================================================================
+# OPUS-CONDUCTOR CONFIGURATION
+# =============================================================================
+#
+# Configuration for the Opus-Conductor multi-agent orchestration system.
+# Opus validates after EVERY stage, not just at planning.
+#
+# VERSION: 1.0
+# LAST UPDATED: 2025-12-03
+# =============================================================================
+
+# =============================================================================
+# MODEL ROSTER
+# =============================================================================
+# Models organized by role. Each role can have primary + fallback models.
+# Opus is always the supervisor/validator. Fast models do the heavy lifting.
+
+models:
+  # ---------------------------------------------------------------------------
+  # SUPERVISOR / VALIDATOR (Opus - always in the loop)
+  # ---------------------------------------------------------------------------
+  supervisor:
+    primary:
+      id: "claude-opus-4-5-20251101"
+      provider: "anthropic"
+      temperature: 0.0
+      max_tokens: 16384
+      pricing:
+        prompt: 0.015      # per 1k tokens
+        completion: 0.075
+    fallback:
+      id: "claude-sonnet-4-5-20250929"
+      provider: "anthropic"
+      temperature: 0.0
+      max_tokens: 16384
+      pricing:
+        prompt: 0.003
+        completion: 0.015
+
+  # ---------------------------------------------------------------------------
+  # CONTEXT AGENT (large context window for repo analysis)
+  # ---------------------------------------------------------------------------
+  context:
+    primary:
+      id: "gemini-2.0-flash"
+      provider: "google"
+      temperature: 0.0
+      max_tokens: 32768
+      context_window: 1000000  # 1M tokens
+      pricing:
+        prompt: 0.0001
+        completion: 0.0004
+    fallback:
+      id: "gemini-2.0-flash"
+      provider: "google"
+      temperature: 0.0
+      max_tokens: 32768
+      context_window: 1000000
+      pricing:
+        prompt: 0.0001
+        completion: 0.0004
+
+  # ---------------------------------------------------------------------------
+  # ENGINEERING AGENT (code generation)
+  # ---------------------------------------------------------------------------
+  engineering:
+    primary:
+      id: "claude-sonnet-4-5-20250929"
+      provider: "anthropic"
+      temperature: 0.0
+      max_tokens: 16384
+      pricing:
+        prompt: 0.003
+        completion: 0.015
+    fallback:
+      id: "gpt-4o"
+      provider: "openai"
+      temperature: 0.0
+      max_tokens: 16384
+      pricing:
+        prompt: 0.0025
+        completion: 0.01
+
+  # ---------------------------------------------------------------------------
+  # REVIEW AGENT (code review and verification)
+  # ---------------------------------------------------------------------------
+  review:
+    primary:
+      id: "gpt-4o"
+      provider: "openai"
+      temperature: 0.0
+      max_tokens: 8192
+      pricing:
+        prompt: 0.0025
+        completion: 0.01
+    fallback:
+      id: "claude-sonnet-4-5-20250929"
+      provider: "anthropic"
+      temperature: 0.0
+      max_tokens: 8192
+      pricing:
+        prompt: 0.003
+        completion: 0.015
+
+  # ---------------------------------------------------------------------------
+  # FAST INFERENCE (for quick iterations)
+  # ---------------------------------------------------------------------------
+  fast:
+    primary:
+      id: "gemini-2.0-flash"
+      provider: "google"
+      temperature: 0.0
+      max_tokens: 8192
+      pricing:
+        prompt: 0.0001
+        completion: 0.0004
+    fallback:
+      id: "gpt-4o-mini"
+      provider: "openai"
+      temperature: 0.0
+      max_tokens: 8192
+      pricing:
+        prompt: 0.00015
+        completion: 0.0006
+
+# =============================================================================
+# PROVIDER CONFIGURATION
+# =============================================================================
+providers:
+  anthropic:
+    base_url: "https://api.anthropic.com"
+    api_key_env: "ANTHROPIC_API_KEY"
+    rate_limit_rpm: 50
+    rate_limit_tpm: 100000
+
+  openai:
+    base_url: "https://api.openai.com/v1"
+    api_key_env: "OPENAI_API_KEY"
+    rate_limit_rpm: 60
+    rate_limit_tpm: 150000
+
+  google:
+    api_key_env: "GEMINI_API_KEY"
+    rate_limit_rpm: 60
+    rate_limit_tpm: 1000000
+
+# =============================================================================
+# ORCHESTRATION SETTINGS
+# =============================================================================
+orchestration:
+  # Maximum retries per stage before escalating
+  max_retries_per_stage: 3
+
+  # Overall retry budget across all stages
+  max_total_retries: 10
+
+  # Circuit breaker threshold (consecutive failures)
+  circuit_breaker_threshold: 5
+
+  # Timeout settings (seconds)
+  timeouts:
+    model_call: 300         # 5 minutes per call
+    stage: 600              # 10 minutes per stage
+    total: 3600             # 1 hour total
+
+  # Cost limits
+  cost_limits:
+    per_stage: 2.00         # Max $2 per stage
+    total: 10.00            # Max $10 total
+
+# =============================================================================
+# VALIDATION SETTINGS
+# =============================================================================
+validation:
+  # Static analysis checks
+  static:
+    check_syntax: true
+    check_imports: true
+    check_edge_cases: true
+    max_line_length: 120
+
+  # Semantic validation (Opus review)
+  semantic:
+    require_acknowledgment: true
+    verify_constraints: true
+    verify_success_criteria: true
+
+  # Execution validation
+  execution:
+    run_tests: true
+    require_passing_tests: false  # For SWE-bench, tests may be hidden
+    sandbox_enabled: true
+    sandbox_timeout: 60
+
+# =============================================================================
+# HANDOFF PROTOCOL
+# =============================================================================
+handoff:
+  # Require explicit acknowledgment from receiving agent
+  require_acknowledgment: true
+
+  # Include validation checkpoint in handoff
+  include_checkpoint: true
+
+  # Template for handoff messages
+  acknowledgment_template: |
+    I acknowledge receiving the following from {source_stage}:
+    - Constraints: {constraints}
+    - Success criteria: {success_criteria}
+    - Required imports: {required_imports}
+    - Edge cases to handle: {edge_cases}
+
+    I will ensure my output satisfies all these requirements.
+
+# =============================================================================
+# LOGGING & OBSERVABILITY
+# =============================================================================
+logging:
+  level: "INFO"
+  log_file: "logs/conductor.log"
+  trace_file: "logs/conductor_trace.jsonl"
+
+  # What to include in audit trail
+  audit:
+    log_prompts: true
+    log_responses: true
+    max_preview_length: 500
+    include_timestamps: true
+    include_costs: true
+
+# =============================================================================
+# RECOVERY STRATEGIES
+# =============================================================================
+recovery:
+  # Strategy per failure type
+  strategies:
+    syntax_error:
+      action: "retry_same_agent"
+      max_attempts: 2
+      guidance: "Fix syntax errors, ensure valid Python"
+
+    missing_import:
+      action: "retry_same_agent"
+      max_attempts: 2
+      guidance: "Add missing imports"
+
+    edge_case_missed:
+      action: "retry_with_guidance"
+      max_attempts: 2
+      guidance: "Handle edge case: {edge_case}"
+
+    test_failure:
+      action: "retry_with_guidance"
+      max_attempts: 3
+      guidance: "Test failed: {test_name}. Fix the implementation."
+
+    semantic_violation:
+      action: "escalate_to_opus"
+      max_attempts: 1
+      guidance: "Constraint violated: {constraint}. Opus will re-plan."
+
+    timeout:
+      action: "fallback_model"
+      max_attempts: 1
+      guidance: "Primary model timed out, using fallback"
+
+    rate_limit:
+      action: "wait_and_retry"
+      max_attempts: 3
+      wait_seconds: 60
+      guidance: "Rate limited, waiting before retry"
+
+# =============================================================================
+# STAGE-SPECIFIC PROMPTS (abbreviated - full prompts in code)
+# =============================================================================
+prompts:
+  context:
+    system: |
+      You are a context analysis agent. Your job is to analyze the repository
+      and identify files relevant to the given task.
+
+      You must output:
+      1. List of relevant files
+      2. Summary of how they relate to the task
+      3. Key patterns/conventions in the codebase
+
+  engineering:
+    system: |
+      You are a code engineering agent. You receive requirements from Opus
+      and must produce code that satisfies ALL of them.
+
+      CRITICAL: You must acknowledge all requirements before coding.
+      CRITICAL: Handle all identified edge cases.
+      CRITICAL: Include all required imports.
+
+  review:
+    system: |
+      You are a code review agent. Review the implementation against:
+      1. Original constraints
+      2. Success criteria
+      3. Edge cases
+      4. Code quality standards
+
+      Output PASS or FAIL with detailed reasoning.
+
+  supervisor:
+    validation: |
+      Review the output from {stage} stage.
+
+      Requirements to verify:
+      - Constraints: {constraints}
+      - Success criteria: {success_criteria}
+      - Edge cases: {edge_cases}
+
+      Output:
+      - Decision: APPROVED | RETRY | ESCALATE
+      - Issues found (if any)
+      - Guidance for retry (if RETRY)

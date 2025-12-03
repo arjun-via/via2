@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-12-02T13:57:31.978525",
+  "total_tasks": 2,
+  "solved": 0,
+  "solve_rate": 0.0,
+  "total_cost": 0.16396280000000002,
+  "total_time": 152.45796990394592,
+  "avg_time_per_task": 76.22898495197296,
+  "results": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "success": false,
+      "total_time": 120.20667290687561,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    },
+    {
+      "instance_id": "astropy__astropy-13033",
+      "success": false,
+      "total_time": 32.25129699707031,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    }
+  ]
+}

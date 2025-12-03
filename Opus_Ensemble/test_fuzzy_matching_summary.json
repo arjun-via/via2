@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-12-02T19:51:12.173732",
+  "total_tasks": 1,
+  "solved": 0,
+  "solve_rate": 0.0,
+  "total_cost": 5.173295,
+  "total_time": 161.80722498893738,
+  "avg_time_per_task": 161.80722498893738,
+  "results": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "success": false,
+      "total_time": 161.80722498893738,
+      "patches_generated": 40,
+      "patches_passing": 0,
+      "error": "No patches passed verification (generated: 40, verified: 40)"
+    }
+  ]
+}
