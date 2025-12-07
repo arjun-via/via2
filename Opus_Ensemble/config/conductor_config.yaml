@@ -5,19 +5,20 @@
 # Configuration for the Opus-Conductor multi-agent orchestration system.
 # Opus validates after EVERY stage, not just at planning.
 #
-# VERSION: 1.0
-# LAST UPDATED: 2025-12-03
+# VERSION: 2.0
+# LAST UPDATED: 2025-12-04
 # =============================================================================
 
 # =============================================================================
 # MODEL ROSTER
 # =============================================================================
 # Models organized by role. Each role can have primary + fallback models.
-# Opus is always the supervisor/validator. Fast models do the heavy lifting.
+# Opus 4.5 is the main model for supervisor, engineering, and review.
+# Gemini 3 Pro Preview via OpenRouter handles context analysis.
 
 models:
   # ---------------------------------------------------------------------------
-  # SUPERVISOR / VALIDATOR (Opus - always in the loop)
+  # SUPERVISOR / VALIDATOR (Opus 4.5 - always in the loop)
   # ---------------------------------------------------------------------------
   supervisor:
     primary:
@@ -26,8 +27,8 @@ models:
       temperature: 0.0
       max_tokens: 16384
       pricing:
-        prompt: 0.015      # per 1k tokens
-        completion: 0.075
+        prompt: 0.005      # $5 per 1M tokens
+        completion: 0.025  # $25 per 1M tokens
     fallback:
       id: "claude-sonnet-4-5-20250929"
       provider: "anthropic"
@@ -38,21 +39,21 @@ models:
         completion: 0.015
 
   # ---------------------------------------------------------------------------
-  # CONTEXT AGENT (large context window for repo analysis)
+  # CONTEXT AGENT (Gemini 3 Pro Preview via OpenRouter)
   # ---------------------------------------------------------------------------
   context:
     primary:
-      id: "gemini-2.0-flash"
-      provider: "google"
+      id: "google/gemini-3-pro-preview"
+      provider: "openrouter"
       temperature: 0.0
       max_tokens: 32768
       context_window: 1000000  # 1M tokens
       pricing:
-        prompt: 0.0001
-        completion: 0.0004
+        prompt: 0.00125     # $1.25 / 1M input
+        completion: 0.01    # $10 / 1M output (estimate)
     fallback:
-      id: "gemini-2.0-flash"
-      provider: "google"
+      id: "google/gemini-2.0-flash-001"
+      provider: "openrouter"
       temperature: 0.0
       max_tokens: 32768
       context_window: 1000000
@@ -61,10 +62,18 @@ models:
         completion: 0.0004
 
   # ---------------------------------------------------------------------------
-  # ENGINEERING AGENT (code generation)
+  # ENGINEERING AGENT (Opus 4.5 for code generation)
   # ---------------------------------------------------------------------------
   engineering:
     primary:
+      id: "claude-opus-4-5-20251101"
+      provider: "anthropic"
+      temperature: 0.0
+      max_tokens: 16384
+      pricing:
+        prompt: 0.005      # $5 per 1M tokens
+        completion: 0.025  # $25 per 1M tokens
+    fallback:
       id: "claude-sonnet-4-5-20250929"
       provider: "anthropic"
       temperature: 0.0
@@ -72,22 +81,14 @@ models:
       pricing:
         prompt: 0.003
         completion: 0.015
-    fallback:
-      id: "gpt-4o"
-      provider: "openai"
-      temperature: 0.0
-      max_tokens: 16384
-      pricing:
-        prompt: 0.0025
-        completion: 0.01
 
   # ---------------------------------------------------------------------------
-  # REVIEW AGENT (code review and verification)
+  # REVIEW AGENT (GPT-4o via OpenRouter)
   # ---------------------------------------------------------------------------
   review:
     primary:
-      id: "gpt-4o"
-      provider: "openai"
+      id: "openai/gpt-4o"
+      provider: "openrouter"
       temperature: 0.0
       max_tokens: 8192
       pricing:
@@ -107,8 +108,8 @@ models:
   # ---------------------------------------------------------------------------
   fast:
     primary:
-      id: "gemini-2.0-flash"
-      provider: "google"
+      id: "google/gemini-2.0-flash-001"
+      provider: "openrouter"
       temperature: 0.0
       max_tokens: 8192
       pricing:
@@ -143,6 +144,12 @@ providers:
     api_key_env: "GEMINI_API_KEY"
     rate_limit_rpm: 60
     rate_limit_tpm: 1000000
+
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    api_key_env: "OPENROUTER_API_KEY"
+    rate_limit_rpm: 60
+    rate_limit_tpm: 500000
 
 # =============================================================================
 # ORCHESTRATION SETTINGS

@@ -212,6 +212,12 @@ class StaticAnalyzer(BaseValidator):
     def _check_syntax(self, code: str) -> List[ValidationIssue]:
         """Check Python syntax validity."""
         issues = []
+
+        # Skip syntax check for diff/patch format (SWE-bench outputs diffs, not raw code)
+        if code.strip().startswith('---') or code.strip().startswith('diff ') or code.strip().startswith('@@'):
+            # This is a unified diff, not Python code - skip AST parsing
+            return issues
+
         try:
             ast.parse(code)
         except SyntaxError as e:

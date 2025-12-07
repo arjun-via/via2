@@ -64,6 +64,7 @@ class Provider(Enum):
     ANTHROPIC = "anthropic"
     OPENAI = "openai"
     GOOGLE = "google"
+    OPENROUTER = "openrouter"
 
 
 @dataclass
@@ -382,6 +383,72 @@ class GoogleProvider(BaseProvider):
             raise ProviderError(str(e), "google")
 
 
+class OpenRouterProvider(BaseProvider):
+    """OpenRouter API provider (multiple models via OpenAI-compatible API)."""
+
+    def __init__(self, api_key: Optional[str] = None, base_url: str = "https://openrouter.ai/api/v1"):
+        self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY", "")
+        if not self.api_key:
+            raise AuthenticationError("OPENROUTER_API_KEY not set", "openrouter")
+        self.client = openai.OpenAI(api_key=self.api_key, base_url=base_url)
+
+    def complete(
+        self,
+        messages: List[Dict[str, str]],
+        model_config: ModelConfig,
+        system: Optional[str] = None,
+    ) -> ModelResponse:
+        """Send completion request to OpenRouter API."""
+        start_time = time.time()
+
+        try:
+            # Prepend system message if provided
+            full_messages = []
+            if system:
+                full_messages.append({"role": "system", "content": system})
+            full_messages.extend(messages)
+
+            response = self.client.chat.completions.create(
+                model=model_config.id,
+                messages=full_messages,
+                max_tokens=model_config.max_tokens,
+                temperature=model_config.temperature,
+            )
+
+            duration = time.time() - start_time
+
+            content = response.choices[0].message.content or ""
+            prompt_tokens = response.usage.prompt_tokens if response.usage else 0
+            completion_tokens = response.usage.completion_tokens if response.usage else 0
+
+            cost = (
+                (prompt_tokens / 1000) * model_config.prompt_cost_per_1k +
+                (completion_tokens / 1000) * model_config.completion_cost_per_1k
+            )
+
+            return ModelResponse(
+                content=content,
+                model_id=model_config.id,
+                provider="openrouter",
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=prompt_tokens + completion_tokens,
+                cost=cost,
+                duration=duration,
+                finish_reason=response.choices[0].finish_reason or "",
+                raw_response=response,
+            )
+
+        except openai.RateLimitError as e:
+            raise RateLimitError(str(e), "openrouter", retry_after=60.0)
+        except openai.AuthenticationError as e:
+            raise AuthenticationError(str(e), "openrouter")
+        except openai.NotFoundError as e:
+            raise ModelNotFoundError(str(e), "openrouter")
+        except Exception as e:
+            raise ProviderError(str(e), "openrouter")
+
+
 class ResilientModelClient:
     """
     Resilient model client with automatic failover and retry logic.
@@ -436,6 +503,8 @@ class ResilientModelClient:
                 self._providers[provider] = OpenAIProvider()
             elif provider == Provider.GOOGLE:
                 self._providers[provider] = GoogleProvider()
+            elif provider == Provider.OPENROUTER:
+                self._providers[provider] = OpenRouterProvider()
             else:
                 raise ValueError(f"Unknown provider: {provider}")
         return self._providers[provider]

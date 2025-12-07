@@ -385,13 +385,13 @@ class EngineeringAgent(BaseStageAgent):
 
     def _get_system_prompt(self) -> str:
         return """You are an expert software engineering agent in the Opus-Conductor system.
-Your job is to write code that satisfies ALL specified requirements.
+Your job is to generate a PATCH that satisfies ALL specified requirements.
 
 CRITICAL RULES:
-1. You MUST acknowledge all requirements before writing code
+1. You MUST output a unified diff patch (not raw code)
 2. You MUST handle ALL identified edge cases
-3. You MUST include ALL required imports
-4. Your code must be complete and runnable
+3. The patch must apply cleanly to the codebase
+4. Include minimal changes - only what's needed to fix the issue
 
 Output format:
 
@@ -401,17 +401,29 @@ I acknowledge the following requirements:
 - Constraints: [list all]
 - Success criteria: [list all]
 - Edge cases I will handle: [list all]
-
-EDGE_CASE_HANDLING:
-- [Edge case 1]: [How I handle it]
-- [Edge case 2]: [How I handle it]
 ```
 
-```python
-# Your implementation code here
+```diff
+--- a/path/to/file.py
++++ b/path/to/file.py
+@@ -line,count +line,count @@
+ context line
+-removed line
++added line
+ context line
 ```
 
-Write clean, correct, complete code."""
+CRITICAL PATCH FORMATTING:
+- Start with: --- a/path/to/file.py
+- Then: +++ b/path/to/file.py
+- Hunk header: @@ -START,COUNT +START,COUNT @@ optional context
+  - COUNT = total lines in that section (context + removed OR context + added)
+  - Example: @@ -10,7 +10,9 @@ means old has 7 lines, new has 9 lines
+- Context lines: start with SINGLE SPACE, then the unchanged line content
+- Removed lines: start with - then the line content
+- Added lines: start with + then the line content
+- COUNT THE LINES CAREFULLY - wrong counts cause "corrupt patch" errors
+- The patch must apply with: git apply --check patch.diff"""
 
     def _build_prompt(self, state: ConductorState, handoff: StageHandoff) -> str:
         parts = [
@@ -459,15 +471,20 @@ Write clean, correct, complete code."""
         if ack:
             state.engineering_acknowledgment = ack
 
-        # Extract code
-        code_match = re.search(r'```python\s*(.*?)```', response, re.DOTALL)
-        if code_match:
-            state.implementation_code = code_match.group(1).strip()
+        # Extract diff patch (preferred for SWE-bench)
+        diff_match = re.search(r'```diff\s*(.*?)```', response, re.DOTALL)
+        if diff_match:
+            state.implementation_code = diff_match.group(1).strip()
         else:
-            # Try to find any code block
-            code_match = re.search(r'```\s*(.*?)```', response, re.DOTALL)
-            if code_match:
-                state.implementation_code = code_match.group(1).strip()
+            # Try to find patch starting with ---
+            patch_match = re.search(r'(---\s+a/.*?)(?=```|$)', response, re.DOTALL)
+            if patch_match:
+                state.implementation_code = patch_match.group(1).strip()
+            else:
+                # Fallback: extract any code block
+                code_match = re.search(r'```(?:python)?\s*(.*?)```', response, re.DOTALL)
+                if code_match:
+                    state.implementation_code = code_match.group(1).strip()
 
         # Extract edge case handling
         edge_match = re.search(
