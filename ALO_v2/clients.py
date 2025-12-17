@@ -54,9 +54,9 @@ class BaseClient(ABC):
         pass
 
     def _calculate_cost(self, prompt_tokens: int, completion_tokens: int) -> float:
-        """Calculate cost based on token usage"""
-        prompt_cost = (prompt_tokens / 1000) * self.config.pricing_prompt
-        completion_cost = (completion_tokens / 1000) * self.config.pricing_completion
+        """Calculate cost based on token usage (pricing is per 1M tokens)"""
+        prompt_cost = (prompt_tokens / 1_000_000) * self.config.pricing_prompt
+        completion_cost = (completion_tokens / 1_000_000) * self.config.pricing_completion
         return prompt_cost + completion_cost
 
 

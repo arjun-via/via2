@@ -48,9 +48,11 @@ class DockerExecutor:
 
     def _get_image_name(self, instance_id: str) -> str:
         """Get the SWE-bench Docker image name for an instance"""
-        # SWE-bench image naming: sweb.eval.x86_64.{repo}__{version}:latest
-        # e.g., django__django-11292 -> sweb.eval.x86_64.django__django-11292:latest
-        return f"sweb.eval.x86_64.{instance_id}:latest"
+        # SWE-bench image naming: swebench/sweb.eval.x86_64.{repo}_1776_{repo}-{issue}:latest
+        # e.g., django__django-11292 -> swebench/sweb.eval.x86_64.django_1776_django-11292:latest
+        # Replace __ with _1776_
+        image_suffix = instance_id.replace("__", "_1776_")
+        return f"swebench/sweb.eval.x86_64.{image_suffix}:latest"
 
     def start_container(self) -> bool:
         """Start the Docker container for this instance"""
@@ -81,6 +83,10 @@ class DockerExecutor:
                 )
 
             self.container_running = True
+
+            # Install the package in development mode (needed for tests)
+            self._setup_environment()
+
             return True
 
         except subprocess.CalledProcessError as e:
@@ -89,6 +95,11 @@ class DockerExecutor:
         except subprocess.TimeoutExpired:
             print("Timeout starting container")
             return False
+
+    def _setup_environment(self):
+        """Set up the development environment in the container"""
+        # Install package in editable mode
+        self.execute("pip install -e /testbed -q 2>/dev/null || true", timeout=60)
 
     def stop_container(self):
         """Stop and remove the container"""

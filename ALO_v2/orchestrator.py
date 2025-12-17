@@ -327,7 +327,7 @@ Analyze the results and respond in JSON:
         return state
 
     def _extract_patch(self, content: str) -> str:
-        """Extract unified diff patch from model response"""
+        """Extract unified diff patch from model response and normalize format"""
         lines = content.split("\n")
         patch_lines = []
         in_patch = False
@@ -338,7 +338,23 @@ Analyze the results and respond in JSON:
             if in_patch:
                 patch_lines.append(line)
 
-        return "\n".join(patch_lines)
+        patch = "\n".join(patch_lines)
+
+        # Normalize patch format - add a/ and b/ prefixes if missing
+        normalized_lines = []
+        for line in patch.split("\n"):
+            if line.startswith("--- ") and not line.startswith("--- a/"):
+                # Convert "--- path" to "--- a/path"
+                path = line[4:].strip()
+                normalized_lines.append(f"--- a/{path}")
+            elif line.startswith("+++ ") and not line.startswith("+++ b/"):
+                # Convert "+++ path" to "+++ b/path"
+                path = line[4:].strip()
+                normalized_lines.append(f"+++ b/{path}")
+            else:
+                normalized_lines.append(line)
+
+        return "\n".join(normalized_lines)
 
     def _validate(self, state: PipelineState, executor: DockerExecutor, test_cmd: str) -> PipelineState:
         """Stage 5: Validate the fix"""
