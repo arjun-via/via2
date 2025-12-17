@@ -346,10 +346,16 @@ Analyze the results and respond in JSON:
             if line.startswith("--- ") and not line.startswith("--- a/"):
                 # Convert "--- path" to "--- a/path"
                 path = line[4:].strip()
+                # Remove leading ./ if present
+                if path.startswith("./"):
+                    path = path[2:]
                 normalized_lines.append(f"--- a/{path}")
             elif line.startswith("+++ ") and not line.startswith("+++ b/"):
                 # Convert "+++ path" to "+++ b/path"
                 path = line[4:].strip()
+                # Remove leading ./ if present
+                if path.startswith("./"):
+                    path = path[2:]
                 normalized_lines.append(f"+++ b/{path}")
             else:
                 normalized_lines.append(line)
