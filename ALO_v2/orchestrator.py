@@ -129,12 +129,23 @@ RELEVANT CODE:
 
 {reproduction_context}
 
-Generate a unified diff patch that fixes the issue. The patch should:
-1. Fix the root cause, not just symptoms
-2. Be minimal - only change what's necessary
-3. Follow the existing code style
+Generate the fix using SEARCH/REPLACE blocks. For each change needed:
+1. Copy the EXACT text from the file that needs to change (including whitespace)
+2. Show what it should be replaced with
 
-Return ONLY the unified diff patch, starting with --- and +++"""
+Format your response as one or more SEARCH/REPLACE blocks:
+
+<<<<<<< SEARCH
+[exact text to find - copy from the file above exactly]
+=======
+[replacement text]
+>>>>>>> REPLACE
+
+IMPORTANT:
+- The SEARCH text must match EXACTLY what's in the file (copy-paste it)
+- Include enough context to make the match unique (usually 3-10 lines)
+- You can have multiple SEARCH/REPLACE blocks for multiple changes
+- Each block fixes one location in the code"""
 
     VALIDATE_PROMPT = """Review the test results and decide next steps.
 
@@ -287,15 +298,17 @@ Analyze the results and respond in JSON:
         return state
 
     def _fix(self, state: PipelineState, executor: DockerExecutor) -> PipelineState:
-        """Stage 4: Generate fix"""
+        """Stage 4: Generate fix using SEARCH/REPLACE blocks"""
         state.current_stage = Stage.FIX
         state.patch_attempts += 1
 
-        # Build context from file contents
-        file_context = "\n\n".join([
-            f"=== {path} ===\n{content[:5000]}"  # Limit per file
-            for path, content in state.file_contents.items()
-        ])
+        # Build context from file contents with line numbers for reference
+        file_context_parts = []
+        for path, content in state.file_contents.items():
+            lines = content.split('\n')[:200]  # Limit lines
+            numbered = '\n'.join(f"{i+1:4d} | {line}" for i, line in enumerate(lines))
+            file_context_parts.append(f"=== {path} ===\n{numbered}")
+        file_context = "\n\n".join(file_context_parts)
 
         # Add reproduction context if available
         repro_context = ""
@@ -312,19 +325,103 @@ Analyze the results and respond in JSON:
         context_size = len(prompt)
         response = self._call_worker(prompt, state, context_size=context_size)
 
-        # Extract patch from response
-        state.patch = self._extract_patch(response.content)
+        # Parse SEARCH/REPLACE blocks
+        changes = self._parse_search_replace(response.content)
 
-        # Apply patch
-        if state.patch:
-            success, message = executor.apply_patch(state.patch)
-            if not success:
+        if not changes:
+            # Fallback: try to extract unified diff patch
+            state.patch = self._extract_patch(response.content)
+            if state.patch:
+                success, message = executor.apply_patch(state.patch)
+                if not success:
+                    state.history.append({
+                        "stage": "patch_failed",
+                        "message": message
+                    })
+            return state
+
+        # Apply SEARCH/REPLACE changes
+        all_success = True
+        applied_changes = []
+
+        for search, replace in changes:
+            # Find which file contains this text
+            found_in = None
+            for path, content in state.file_contents.items():
+                if search in content:
+                    found_in = path
+                    break
+
+            if not found_in:
                 state.history.append({
                     "stage": "patch_failed",
-                    "message": message
+                    "message": f"SEARCH text not found in any file: {search[:100]}..."
                 })
+                all_success = False
+                continue
+
+            # Apply the change
+            success, message = self._apply_search_replace(executor, found_in, search, replace)
+            if success:
+                applied_changes.append((found_in, search[:50], replace[:50]))
+            else:
+                state.history.append({
+                    "stage": "patch_failed",
+                    "message": f"Failed to apply change to {found_in}: {message}"
+                })
+                all_success = False
+
+        # Generate patch from applied changes for the result
+        if applied_changes:
+            state.patch = executor.get_diff()
 
         return state
+
+    def _parse_search_replace(self, content: str) -> list:
+        """Parse SEARCH/REPLACE blocks from model response"""
+        changes = []
+
+        # Pattern: <<<<<<< SEARCH ... ======= ... >>>>>>> REPLACE
+        import re
+        pattern = r'<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE'
+        matches = re.findall(pattern, content, re.DOTALL)
+
+        for search, replace in matches:
+            # Clean up the text
+            search = search.strip()
+            replace = replace.strip()
+            if search:  # Only add if search is not empty
+                changes.append((search, replace))
+
+        return changes
+
+    def _apply_search_replace(self, executor: DockerExecutor, file_path: str, search: str, replace: str) -> tuple:
+        """Apply a single SEARCH/REPLACE change to a file"""
+        # Read current file content
+        full_path = f"/testbed/{file_path}"
+        content = executor.read_file(full_path)
+
+        if content is None:
+            return False, f"Could not read {file_path}"
+
+        if search not in content:
+            return False, f"SEARCH text not found in {file_path}"
+
+        # Count occurrences
+        count = content.count(search)
+        if count > 1:
+            return False, f"SEARCH text found {count} times (must be unique)"
+
+        # Apply replacement
+        new_content = content.replace(search, replace)
+
+        # Write back
+        success = executor.write_file(full_path, new_content)
+
+        if success:
+            return True, "Applied successfully"
+        else:
+            return False, "Failed to write file"
 
     def _extract_patch(self, content: str) -> str:
         """Extract unified diff patch from model response and normalize format"""
